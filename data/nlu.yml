@@ -1,5 +1,7 @@
 version: "3.1"
 
+# Intents introdotti di base dal comando 'rasa init'
+
 nlu:
 - intent: greet
   examples: |
@@ -89,3 +91,18 @@ nlu:
     - are you a human?
     - am I talking to a bot?
     - am I talking to a human?
+
+# Intents creati per il progetto del wine bot
+
+- intent: search_wine
+  examples: |
+    - I am looking for a [white](wine_type) wine
+    - search for a [Tempranillo](grape) from [Spain](country)
+    - do you have any [Chardonnay](grape) wine?
+    - suggest a [Red](wine_type) wine
+    - I would like to drink a wine from [California](country)
+    - can you find me a [Tempranillo](grape)?
+    - looking for a bottle of wine
+    - I want to buy [Chardonnay](grape)
+
+    

@@ -1,5 +1,7 @@
 version: "3.1"
 
+# Intents introdotti di base dal comando 'rasa init'
+
 intents:
   - greet
   - goodbye
@@ -8,6 +10,7 @@ intents:
   - mood_great
   - mood_unhappy
   - bot_challenge
+  - search_wine
 
 responses:
   utter_greet:
@@ -32,3 +35,31 @@ responses:
 session_config:
   session_expiration_time: 60
   carry_over_slots_to_new_session: true
+
+# Intents creati per il progetto del rasa bot
+
+entities:
+  - grape
+  - wine_type
+  - country
+  - price
+
+slots:
+  grape:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: grape
+  wine_type:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: wine_type
+  country:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: country
+
+actions:
+  - action_search_wine

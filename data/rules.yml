@@ -11,3 +11,8 @@ rules:
   steps:
   - intent: bot_challenge
   - action: utter_iamabot
+
+- rule: Respond to wine search
+  steps:
+  - intent: search_wine
+  - action: action_search_wine
