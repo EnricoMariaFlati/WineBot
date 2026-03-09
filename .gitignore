@@ -5,3 +5,5 @@ __pycache__/
 winebot_env/
 venv/
 *.pyc
+.rasa/
+.vscode/
