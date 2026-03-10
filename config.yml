@@ -10,7 +10,7 @@ assistant_id: 20260309-172757-warm-velvet
 # https://rasa.com/docs/rasa/nlu/components/
 language: en
 
-pipeline: null
+#pipeline: null
 # # No configuration for the NLU pipeline was provided. The following default pipeline was used to train your model.
 # # If you'd like to customize it, uncomment and adjust the pipeline.
 # # See https://rasa.com/docs/rasa/tuning-your-model for more information.
@@ -48,3 +48,10 @@ policies: null
 #     max_history: 5
 #     epochs: 100
 #     constrain_similarities: true
+
+# Se il bot non è sicuro della risposta, userà comunque la utter_out_of_scope (o un'altra dedicata)
+
+pipeline:
+  - name: FallbackClassifier
+    threshold: 0.7  # Se la confidenza è sotto il 70%, attiva il fallback
+    ambiguity_threshold: 0.1

@@ -72,7 +72,7 @@ nlu:
 
 # Intents creati per il progetto del wine bot
 
-- intent: search_wine
+- intent: wine_search
   examples: |
     - I am looking for a [white](wine_type) wine
     - search for a [Tempranillo](grape) from [Spain](country)
@@ -112,3 +112,13 @@ nlu:
     - show me the characteristics list
     - what kind of flavors are there?
     - which characteristics can I find?
+
+- intent: out_of_scope_of_bot
+  examples: |
+    - Who won the world cup?
+    - How do I make a carbonara?
+    - What is the weather like today?
+    - Tell me about politics
+    - Who is the president?
+    - Can you tell me a joke?
+    - How are you?

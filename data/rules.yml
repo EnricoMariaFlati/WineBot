@@ -43,3 +43,8 @@ rules:
     - requested_slot: null
   - action: action_search_wine
   - action: utter_wine_search_results
+
+- rule: Handle out-of-scope_of_bot requests
+  steps:
+    - intent: out_of_scope_of_bot
+    - action: utter_out_of_scope_of_bot
