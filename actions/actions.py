@@ -139,3 +139,38 @@ class ActionWinePairing(Action):
             print(f"Errore: {e}")
 
         return []
+
+class ActionExplainSpecificCharacteristicOfWine(Action):
+    def name(self) -> Text:
+        return "action_explain_specific_characteristic_of_wine"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        term = tracker.get_slot("term")
+        
+        # Dizionario delle definizioni
+        definitions = {
+            "sapid": "A wine is 'sapid' when it has a distinct savory, mineral quality that makes your mouth water. 🌊",
+            "tannins": "Tannins are compounds found in grape skins that give wine that drying, 'gripping' sensation. ☕",
+            "full-bodied": "A full-bodied wine feels heavy, rich, and 'thick' in your mouth. 🥛",
+            "acidity": "Acidity gives wine its freshness and 'zing'. Without it, wine would taste flat. 🍋",
+            "savoury": "In our collection, a 'savoury' wine refers to complex, mineral, or earthy notes that evoke a culinary depth. It goes beyond simple fruitiness, offering a structured and layered profile. 🌊",
+            "oak-influence": "This refers to the use of oak during maturation. In our collection, it introduces notes of vanilla, cedar, and sweet spices, adding complexity and smoothness to the wine. 🪵",
+            "structured": "A 'structured' wine is balanced and complex. Our tasting notes often describe layered bouquets of black fruits and balsamic hints, indicating a wine that is well-built and ready for aging. 🏗️",
+            "aromatic": "An 'aromatic' wine has an intense and distinctive olfactory profile. For example, our Viogniers immediately release vibrant notes of apricot, ginger, and cardamom. 🌸",
+            "terroir": "Terroir refers to the complete natural environment in which a wine is produced, including factors such as the soil, topography, and climate. It is the 'sense of place' that makes a wine unique to its region. 🌍",
+            "finish": "The finish is the lasting impression or aftertaste that remains on your palate after swallowing the wine. A long, pleasant finish is often a sign of high quality and complexity. ⏳",
+            "minerality": "Minerality is a sensation in the wine that reminds you of wet stones, flint, or saline notes. It is often found in wines grown in soils with specific geological compositions. 💎",
+            "balsamic": "A 'balsamic' note refers to aromas reminiscent of Mediterranean herbs, resin, or sweet, dark woods. It adds a layer of aromatic complexity often found in well-aged, structured reds. 🌿",
+            "vintage": "The vintage is the year the grapes were harvested. It is crucial because climate variations between years can significantly change the character, quality, and potential of the wine. 📅"        
+        }
+        # Ricerca della definizione
+        if term and term.lower() in definitions:
+            explanation = definitions[term.lower()]
+            dispatcher.utter_message(text=f"Great question! {explanation} 📚🍷")
+        else:
+            dispatcher.utter_message(text="That's an interesting term! I'm still learning about that, but feel free to ask me about other wine features! 🍇✨")
+            
+        return []

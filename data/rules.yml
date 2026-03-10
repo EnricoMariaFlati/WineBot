@@ -53,3 +53,8 @@ rules:
   steps:
     - intent: wine_pairing
     - action: action_wine_pairing
+
+- rule: explain_specific_characteristic_of_wine
+  steps:
+  - intent: explain_specific_characteristic_of_wine
+  - action: action_explain_specific_characteristic_of_wine

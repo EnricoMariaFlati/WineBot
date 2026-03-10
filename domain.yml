@@ -18,6 +18,7 @@ entities:
   - grape
   - country
   - food
+  - term # Per spiegare caratteristiche del vino in particolare
 
 slots:
   budget:
@@ -55,6 +56,12 @@ slots:
     mappings:
       - type: from_entity
         entity: food
+  term:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: term
 
 forms:
   wine_search_form:
@@ -67,6 +74,7 @@ actions:
   - action_list_characteristics
   - action_search_wine
   - action_wine_pairing
+  - action_explain_specific_characteristic_of_wine
 
 # 2. Bot responses (Utterances)
 responses:
@@ -83,6 +91,7 @@ responses:
         🍷 **List of characteristics:** Do you want to know the specific characteristics of a wine?
         🌍 **Wine selection:** I can help you find the perfect bottle based on your budget and origin.
         🍽️ **Food pairing**: Tell me what you're eating, and I'll suggest the best wine to match your dish! 🥂✨
+        📖 Wine Glossary: Curious about technical terms like "tannins" or "full-bodied"? Ask me for a definition! 🔍🍷
 
         Where shall we begin?
 

@@ -131,3 +131,11 @@ nlu:
     - What is a good wine for [roasted chicken](food)?
     - Suggest a wine pairing for [seafood](food)?
     - I am eating [cheese](food), what should I drink?
+
+- intent: explain_specific_characteristic_of_wine
+  examples: |
+    - What does it mean if a wine is [sapid](term)?
+    - Explain to me what [tannins](term) are.
+    - What does [full-bodied](term) mean?
+    - Can you explain [acidity](term)?
+    - What is [terroir](term)?
