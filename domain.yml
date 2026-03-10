@@ -7,59 +7,90 @@ intents:
   - goodbye
   - affirm
   - deny
-  - mood_great
-  - mood_unhappy
-  - bot_challenge
-  - search_wine
-
-responses:
-  utter_greet:
-  - text: "Hey! How are you?"
-
-  utter_cheer_up:
-  - text: "Here is something to cheer you up:"
-    image: "https://i.imgur.com/nGF1K8f.jpg"
-
-  utter_did_that_help:
-  - text: "Did that help you?"
-
-  utter_happy:
-  - text: "Great, carry on!"
-
-  utter_goodbye:
-  - text: "Bye"
-
-  utter_iamabot:
-  - text: "I am a bot, powered by Rasa."
-
-session_config:
-  session_expiration_time: 60
-  carry_over_slots_to_new_session: true
-
-# Intents creati per il progetto del rasa bot
+  - wine_search
+  - ask_capabilities
+  - ask_characteristics
 
 entities:
+  - budget
   - grape
-  - wine_type
   - country
-  - price
 
 slots:
+  budget:
+    type: text
+    mappings:
+    - type: from_text
+      conditions:
+      - active_loop: wine_search_form
+        requested_slot: budget
   grape:
     type: text
     mappings:
-      - type: from_entity
-        entity: grape
-  wine_type:
-    type: text
-    mappings:
-      - type: from_entity
-        entity: wine_type
+    - type: from_text
+      conditions:
+      - active_loop: wine_search_form
+        requested_slot: grape
   country:
     type: text
     mappings:
-      - type: from_entity
-        entity: country
+    - type: from_text
+      conditions:
+      - active_loop: wine_search_form
+        requested_slot: country
+  characteristics_list:
+    type: text
+    mappings:
+    - type: custom
+  wine_search_results:
+    type: text
+    mappings:
+    - type: custom
+
+forms:
+  wine_search_form:
+    required_slots:
+      - budget
+      - grape
+      - country
 
 actions:
+  - action_list_characteristics
   - action_search_wine
+
+# 2. Bot responses (Utterances)
+responses:
+  utter_greet:
+    - text: "Hello! I am your virtual sommelier. How can I help you today?"
+
+  utter_goodbye:
+    - text: "Thank you for chatting with me. Cheers and see you soon!"
+
+  utter_capabilities:
+    - text: |
+        I am your virtual sommelier! I can help you explore the world of wine in many ways. Here is what you can ask me:
+        
+        🍷 **List of characteristics:** Do you want to know the specific characteristics of a wine?
+        🌍 **Wine selection:** I can help you find the perfect bottle based on your budget and origin.
+        
+        Where shall we begin?
+
+  utter_ask_budget:
+    - text: "What is your maximum budget for the bottle?"
+
+  utter_ask_grape:
+    - text: "Which grape variety are you looking for?"
+
+  utter_ask_country:
+    - text: "From which country would you like the wine to be?"
+
+  utter_characteristics_list:
+    - text: "Here are the available wine characteristics:\n{characteristics_list}"
+
+  utter_wine_search_results:
+    - text: "Here are your wine recommendations:\n{wine_search_results}"
+
+# 3. Session configuration
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

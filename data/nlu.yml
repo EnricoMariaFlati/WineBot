@@ -18,6 +18,9 @@ nlu:
     - goodmorning
     - goodevening
     - good afternoon
+    - hello  
+    - hello bot
+    - good evening
 
 - intent: goodbye
   examples: |
@@ -31,6 +34,10 @@ nlu:
     - see you around
     - bye bye
     - see you later
+    - see you soon
+    - have a good evening
+    - talk to you later
+
 
 - intent: affirm
   examples: |
@@ -40,6 +47,12 @@ nlu:
     - of course
     - that sounds good
     - correct
+    - sure
+    - alright
+    - ok
+    - absolutely
+    - perfect
+    - of course
 
 - intent: deny
   examples: |
@@ -50,47 +63,12 @@ nlu:
     - don't like that
     - no way
     - not really
+    - don't like that
+    - no
+    - absolutely not
+    - not at all
+    - I don't want to
 
-- intent: mood_great
-  examples: |
-    - perfect
-    - great
-    - amazing
-    - feeling like a king
-    - wonderful
-    - I am feeling very good
-    - I am great
-    - I am amazing
-    - I am going to save the world
-    - super stoked
-    - extremely good
-    - so so perfect
-    - so good
-    - so perfect
-
-- intent: mood_unhappy
-  examples: |
-    - my day was horrible
-    - I am sad
-    - I don't feel very well
-    - I am disappointed
-    - super sad
-    - I'm so sad
-    - sad
-    - very sad
-    - unhappy
-    - not good
-    - not very good
-    - extremly sad
-    - so saad
-    - so sad
-
-- intent: bot_challenge
-  examples: |
-    - are you a bot?
-    - are you a human?
-    - am I talking to a bot?
-    - am I talking to a human?
 
 # Intents creati per il progetto del wine bot
 
@@ -104,5 +82,33 @@ nlu:
     - can you find me a [Tempranillo](grape)?
     - looking for a bottle of wine
     - I want to buy [Chardonnay](grape)
+    - i want to find a wine
+    - help me choose a wine
+    - i need a wine recommendation
+    - suggest a wine
+    - search for a wine
+    - find me a good bottle
+    - I am looking for a wine
 
+- intent: ask_capabilities
+  examples: |
+    - what can you do?
+    - how can you help me?
+    - give me a hand
+    - what kind of information do you have about wines?
+    - what can I ask you?
+    - what are your capabilities?
+    - can you list what you can do?
+    - I don't know what to ask
+    - help me
+    - what parameters do you use to search for wines?
     
+- intent: ask_characteristics
+  examples: |
+    - what are the characteristics of your wines?
+    - list wine characteristics
+    - can you tell me the available wine characteristics?
+    - what features do the wines have?
+    - show me the characteristics list
+    - what kind of flavors are there?
+    - which characteristics can I find?

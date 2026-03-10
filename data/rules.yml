@@ -1,18 +1,45 @@
 version: "3.1"
 
+# Rules introdotti di base dal comando 'rasa init'
+
 rules:
+
+- rule: Respond to greeting anytime
+  steps:
+  - intent: greet
+  - action: utter_greet
 
 - rule: Say goodbye anytime the user says goodbye
   steps:
   - intent: goodbye
   - action: utter_goodbye
 
-- rule: Say 'I am a bot' anytime the user challenges
-  steps:
-  - intent: bot_challenge
-  - action: utter_iamabot
+# Rules introdotte per il progetto del wine bot
 
-- rule: Respond to wine search
+- rule: Always respond to user asking for bot capabilities
   steps:
-  - intent: search_wine
+  - intent: ask_capabilities
+  - action: utter_capabilities
+
+- rule: List wine characteristics
+  steps:
+  - intent: ask_characteristics
+  - action: action_list_characteristics
+  - action: utter_characteristics_list
+
+- rule: Activate wine search form
+  steps:
+  - intent: wine_search
+  - action: wine_search_form
+  - active_loop: wine_search_form
+
+- rule: Submit wine search form
+  condition:
+  - active_loop: wine_search_form
+  steps:
+  - action: wine_search_form
+  - active_loop: null
+  - slot_was_set:
+    - requested_slot: null
   - action: action_search_wine
+  - action: utter_wine_search_results
