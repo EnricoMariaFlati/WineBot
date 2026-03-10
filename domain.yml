@@ -11,11 +11,13 @@ intents:
   - ask_capabilities
   - ask_characteristics
   - out_of_scope_of_bot
+  - wine_pairing
 
 entities:
   - budget
   - grape
   - country
+  - food
 
 slots:
   budget:
@@ -47,6 +49,12 @@ slots:
     type: text
     mappings:
     - type: custom
+  food:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: food
 
 forms:
   wine_search_form:
@@ -58,6 +66,7 @@ forms:
 actions:
   - action_list_characteristics
   - action_search_wine
+  - action_wine_pairing
 
 # 2. Bot responses (Utterances)
 responses:
@@ -73,7 +82,8 @@ responses:
         
         🍷 **List of characteristics:** Do you want to know the specific characteristics of a wine?
         🌍 **Wine selection:** I can help you find the perfect bottle based on your budget and origin.
-        
+        🍽️ **Food pairing**: Tell me what you're eating, and I'll suggest the best wine to match your dish! 🥂✨
+
         Where shall we begin?
 
   utter_ask_budget:
@@ -93,6 +103,7 @@ responses:
 
   utter_out_of_scope_of_bot:
     - text: "I'm sorry, but I am a digital sommelier specialized in wine. 🍷 I can't help with other topics, but if you want to talk about grapes, terroir, or food pairings, I'm at your service! 🍇✨"
+
 # 3. Session configuration
 session_config:
   session_expiration_time: 60

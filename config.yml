@@ -50,8 +50,25 @@ policies: null
 #     constrain_similarities: true
 
 # Se il bot non è sicuro della risposta, userà comunque la utter_out_of_scope (o un'altra dedicata)
-
 pipeline:
-  - name: FallbackClassifier
-    threshold: 0.7  # Se la confidenza è sotto il 70%, attiva il fallback
-    ambiguity_threshold: 0.1
+# # No configuration for the NLU pipeline was provided. The following default pipeline was used to train your model.
+# # If you'd like to customize it, uncomment and adjust the pipeline.
+# # See https://rasa.com/docs/rasa/tuning-your-model for more information.
+#   - name: WhitespaceTokenizer
+#   - name: RegexFeaturizer
+#   - name: LexicalSyntacticFeaturizer
+#   - name: CountVectorsFeaturizer
+#   - name: CountVectorsFeaturizer
+#     analyzer: char_wb
+#     min_ngram: 1
+#     max_ngram: 4
+#   - name: DIETClassifier
+#     epochs: 100
+#     constrain_similarities: true
+#   - name: EntitySynonymMapper
+#   - name: ResponseSelector
+#     epochs: 100
+#     constrain_similarities: true
+#   - name: FallbackClassifier
+#     threshold: 0.3
+#     ambiguity_threshold: 0.1

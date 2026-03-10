@@ -102,3 +102,40 @@ class ActionSearchWine(Action):
         response_text = "\n\n".join(results)
         
         return [SlotSet("wine_search_results", response_text)]
+   
+class ActionWinePairing(Action):
+    def name(self) -> Text:
+        return "action_wine_pairing"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        # 1. Recuperiamo il cibo dallo slot (es. 'steak', 'chicken', 'cheese')
+        food = tracker.get_slot("food")
+        
+        if not food:
+            dispatcher.utter_message(text="Which dish are you planning to eat? 🍽️")
+            return []
+
+        try:
+            # 2. Carichiamo il dataset DENTRO la funzione
+            df = pd.read_csv("WineDataset.csv")
+            
+            # 3. Cerchiamo il cibo nella colonna 'Description' (o 'Characteristics')
+            # Usiamo str.contains per trovare il cibo anche se la descrizione è lunga
+            match = df[df['Description'].str.contains(str(food), case=False, na=False) | 
+                       df['Characteristics'].str.contains(str(food), case=False, na=False)]
+            
+            if not match.empty:
+                # Prendiamo il nome del primo vino trovato
+                wine_title = match.iloc[0]['Title']
+                dispatcher.utter_message(text=f"For {food}, I highly recommend: {wine_title}! 🍷✨ Enjoy your meal! 🍽️")
+            else:
+                dispatcher.utter_message(text=f"I couldn't find a specific pairing for {food} in my collection, but a versatile wine is always a good choice! 🥂")
+                
+        except Exception as e:
+            dispatcher.utter_message(text="Sorry, I had trouble reading the wine database. 🛠️")
+            print(f"Errore: {e}")
+
+        return []

@@ -122,3 +122,12 @@ nlu:
     - Who is the president?
     - Can you tell me a joke?
     - How are you?
+
+- intent: wine_pairing
+  examples: |
+    - What wine goes well with [steak](food)?
+    - Which wine should I drink with [sushi](food)?
+    - Give me a pairing for [pasta](food).
+    - What is a good wine for [roasted chicken](food)?
+    - Suggest a wine pairing for [seafood](food)?
+    - I am eating [cheese](food), what should I drink?

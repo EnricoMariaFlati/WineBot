@@ -48,3 +48,8 @@ rules:
   steps:
     - intent: out_of_scope_of_bot
     - action: utter_out_of_scope_of_bot
+
+- rule: Respond to wine_pairing requests
+  steps:
+    - intent: wine_pairing
+    - action: action_wine_pairing
