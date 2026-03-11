@@ -4,6 +4,7 @@ from typing import Any, Text, Dict, List
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet
+from rapidfuzz import process
 
 class ActionListCharacteristics(Action):
     def name(self) -> Text:
@@ -180,7 +181,6 @@ class ActionGetWineDetails(Action):
         return "action_get_wine_details"
 
     def run(self, dispatcher, tracker, domain):
-        # Prendiamo il nome del vino dal slot
         wine_name = tracker.get_slot("wine_name")
         
         if not wine_name:
@@ -190,15 +190,21 @@ class ActionGetWineDetails(Action):
         # Carichiamo il CSV
         df = pd.read_csv("WineDataset.csv")
         
-        # Cerchiamo il vino (usiamo case=False per ignorare maiuscole/minuscole)
-        wine = df[df['Title'].str.contains(str(wine_name), case=False, na=False)]
+        # --- INIZIO MODIFICA FUZZY ---
+        # 1. Creiamo una lista di tutti i titoli disponibili nel CSV
+        titles = df['Title'].tolist()
         
-        if not wine.empty:
-            # Prendiamo la prima riga trovata
-            data = wine.iloc[0]
+        # 2. Cerchiamo il titolo più simile a quello inserito dall'utente.
+        # score_cutoff=70 significa che la corrispondenza deve essere almeno al 70%
+        match = process.extractOne(wine_name, titles, score_cutoff=70)
+        
+        if match:
+            # match[0] è il titolo corretto trovato nel file
+            found_title = match[0]
+            data = df[df['Title'] == found_title].iloc[0]
+            # --- FINE MODIFICA FUZZY ---
             
-            # Costruiamo il messaggio leggendo le colonne del CSV
-            # Assicuriamoci che i nomi delle colonne qui corrispondano al file (es: Price, Region, Pairing)
+            # Costruiamo il messaggio con i dettagli del vino
             msg = (f"🔍 **Details for {data['Title']}**:\n\n"
                    f"💰 **Price:** {data.get('Price', 'N/A')}\n"
                    f"🍇 **Grape:** {data.get('Grape', 'N/A')}\n"
@@ -212,6 +218,7 @@ class ActionGetWineDetails(Action):
             
             dispatcher.utter_message(text=msg)
         else:
-            dispatcher.utter_message(text=f"Mi dispiace, non ho trovato il vino '{wine_name}' nel mio catalogo. 🥺")
+            # Se la somiglianza è sotto il 70%, entriamo qui
+            dispatcher.utter_message(text=f"Mi dispiace, non ho trovato il vino '{wine_name}' (o qualcosa di simile) nel mio catalogo. 🥺")
             
         return []

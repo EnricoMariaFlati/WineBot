@@ -98,7 +98,7 @@ responses:
     - text: |
         I am your virtual sommelier! I can help you explore the world of wine in many ways. Here is what you can ask me:
         
-        🍷 **List of characteristics:** Do you want to know the specific characteristics of a wine?
+        🍷 Wine Search: Want to know everything about a specific wine? Ask me (e.g., "Tell me about The Guv'nor").
         🌍 **Wine selection:** I can help you find the perfect bottle based on your budget and origin.
         🍽️ **Food pairing**: Tell me what you're eating, and I'll suggest the best wine to match your dish! 🥂✨
         📖 Wine Glossary: Curious about technical terms like "tannins" or "full-bodied"? Ask me for a definition! 🔍🍷
