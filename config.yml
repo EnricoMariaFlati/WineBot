@@ -10,65 +10,42 @@ assistant_id: 20260309-172757-warm-velvet
 # https://rasa.com/docs/rasa/nlu/components/
 language: en
 
-#pipeline: null
-# # No configuration for the NLU pipeline was provided. The following default pipeline was used to train your model.
-# # If you'd like to customize it, uncomment and adjust the pipeline.
-# # See https://rasa.com/docs/rasa/tuning-your-model for more information.
-#   - name: WhitespaceTokenizer
-#   - name: RegexFeaturizer
-#   - name: LexicalSyntacticFeaturizer
-#   - name: CountVectorsFeaturizer
-#   - name: CountVectorsFeaturizer
-#     analyzer: char_wb
-#     min_ngram: 1
-#     max_ngram: 4
-#   - name: DIETClassifier
-#     epochs: 100
-#     constrain_similarities: true
-#   - name: EntitySynonymMapper
-#   - name: ResponseSelector
-#     epochs: 100
-#     constrain_similarities: true
-#   - name: FallbackClassifier
-#     threshold: 0.3
-#     ambiguity_threshold: 0.1
-
-# Configuration for Rasa Core.
-# https://rasa.com/docs/rasa/core/policies/
-policies: null
-# # No configuration for policies was provided. The following default policies were used to train your model.
-# # If you'd like to customize them, uncomment and adjust the policies.
-# # See https://rasa.com/docs/rasa/policies for more information.
-#   - name: MemoizationPolicy
-#   - name: RulePolicy
-#   - name: UnexpecTEDIntentPolicy
-#     max_history: 5
-#     epochs: 100
-#   - name: TEDPolicy
-#     max_history: 5
-#     epochs: 100
-#     constrain_similarities: true
-
 # Se il bot non è sicuro della risposta, userà comunque la utter_out_of_scope (o un'altra dedicata)
 pipeline:
 # # No configuration for the NLU pipeline was provided. The following default pipeline was used to train your model.
 # # If you'd like to customize it, uncomment and adjust the pipeline.
 # # See https://rasa.com/docs/rasa/tuning-your-model for more information.
-#   - name: WhitespaceTokenizer
-#   - name: RegexFeaturizer
-#   - name: LexicalSyntacticFeaturizer
-#   - name: CountVectorsFeaturizer
-#   - name: CountVectorsFeaturizer
-#     analyzer: char_wb
-#     min_ngram: 1
-#     max_ngram: 4
-#   - name: DIETClassifier
-#     epochs: 100
-#     constrain_similarities: true
-#   - name: EntitySynonymMapper
-#   - name: ResponseSelector
-#     epochs: 100
-#     constrain_similarities: true
-#   - name: FallbackClassifier
-#     threshold: 0.3
-#     ambiguity_threshold: 0.1
+   - name: WhitespaceTokenizer # Divide la frase in singole parole (token) basandosi sugli spazi
+   - name: RegexFeaturizer # Rileva pattern basati su espressioni regolari definiti nei file di training
+   - name: LexicalSyntacticFeaturizer # Analizza la struttura delle parole (prefissi, suffissi, maiuscole/minuscole)
+   - name: CountVectorsFeaturizer # Crea una matrice numerica per rappresentare le parole presenti nella frase
+   - name: CountVectorsFeaturizer # Analizza frammenti di parole (n-grams), utile per gestire errori di battitura
+     analyzer: char_wb
+     min_ngram: 1
+     max_ngram: 4
+   - name: DIETClassifier # Il cuore del modello: classifica l'intento (cosa vuole l'utente) ed estrae entità
+     epochs: 100
+     constrain_similarities: true
+   - name: EntitySynonymMapper # Associa sinonimi trovati (es. "red wine" = "red")
+   - name: ResponseSelector # Gestisce le risposte predefinite (se usi il file responses.md)
+     epochs: 100
+     constrain_similarities: true
+   - name: FallbackClassifier # FallbackClassifier per gestire le richieste che il bot non comprende
+     threshold: 0.4 # Se la confidenza è sotto il 40%, scatta il fallback
+     ambiguity_threshold: 0.1 # Se due intenti sono troppo simili tra loro, scatta il fallback
+
+# Configuration for Rasa Core.
+# https://rasa.com/docs/rasa/core/policies/
+policies: 
+# # No configuration for policies was provided. The following default policies were used to train your model.
+# # If you'd like to customize them, uncomment and adjust the policies.
+# # See https://rasa.com/docs/rasa/policies for more information.
+   - name: MemoizationPolicy # Memorizza le conversazioni passate per rispondere esattamente come hai definito nelle storie
+   - name: RulePolicy # Gestisce le regole rigide (come il fallback) che devono sempre accadere in certi contesti
+   - name: UnexpecTEDIntentPolicy # Rileva comportamenti dell'utente inaspettati per evitare che il bot si blocchi
+     max_history: 5
+     epochs: 100
+   - name: TEDPolicy # Il modello predittivo (basato su Transformer) che suggerisce l'azione migliore in base al contesto
+     max_history: 5
+     epochs: 100
+     constrain_similarities: true

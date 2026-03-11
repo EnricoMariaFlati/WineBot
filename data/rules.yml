@@ -58,3 +58,10 @@ rules:
   steps:
   - intent: explain_specific_characteristic_of_wine
   - action: action_explain_specific_characteristic_of_wine
+
+# Rule per il fallback, quando il bot non è sicuro di come rispondere
+
+- rule: Implementation of Fallback
+  steps:
+  - intent: nlu_fallback
+  - action: utter_default
