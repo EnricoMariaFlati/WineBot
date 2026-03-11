@@ -139,3 +139,19 @@ nlu:
     - What does [full-bodied](term) mean?
     - Can you explain [acidity](term)?
     - What is [terroir](term)?
+
+- intent: get_wine_details
+  examples: |
+    - tell me about [Yalumba Viognier](wine_name)
+    - give me info on [Cabernet](wine_name)
+    - what can you tell me about [Chardonnay](wine_name)?
+    - info on [Pinot Noir](wine_name)
+    - details for [Syrah](wine_name)
+    - I want to know more about [Merlot](wine_name)
+    - can you give me details on [Sauvignon Blanc](wine_name)?
+    - what do you know about [Zinfandel](wine_name)?
+    - tell me more about [Riesling](wine_name)  
+    - give me information about [Malbec](wine_name)
+    - what can you tell me about [Tempranillo](wine_name)?
+    - [Sangiovese](wine_name)
+    - [Nebbiolo](wine_name)

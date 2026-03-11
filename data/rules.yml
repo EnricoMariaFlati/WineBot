@@ -65,3 +65,8 @@ rules:
   steps:
   - intent: nlu_fallback
   - action: utter_default
+
+- rule: Rispondi ai dettagli vino
+  steps:
+  - intent: get_wine_details
+  - action: action_get_wine_details

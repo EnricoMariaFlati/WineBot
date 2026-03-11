@@ -12,6 +12,8 @@ intents:
   - ask_characteristics
   - out_of_scope_of_bot
   - wine_pairing
+  - explain_specific_characteristic_of_wine
+  - get_wine_details
 
 entities:
   - budget
@@ -19,6 +21,7 @@ entities:
   - country
   - food
   - term # Per spiegare caratteristiche del vino in particolare
+  - wine_name
 
 slots:
   budget:
@@ -62,6 +65,12 @@ slots:
     mappings:
       - type: from_entity
         entity: term
+  wine_name:
+    type: text
+    influence_conversation: true  # <--- CRUCIALE: forza Rasa a considerare il valore dello slot
+    mappings:
+    - type: from_entity
+      entity: wine_name
 
 forms:
   wine_search_form:
@@ -75,6 +84,7 @@ actions:
   - action_search_wine
   - action_wine_pairing
   - action_explain_specific_characteristic_of_wine
+  - action_get_wine_details
 
 # 2. Bot responses (Utterances)
 responses:

@@ -174,3 +174,44 @@ class ActionExplainSpecificCharacteristicOfWine(Action):
             dispatcher.utter_message(text="That's an interesting term! I'm still learning about that, but feel free to ask me about other wine features! 🍇✨")
             
         return []
+    
+class ActionGetWineDetails(Action):
+    def name(self) -> Text:
+        return "action_get_wine_details"
+
+    def run(self, dispatcher, tracker, domain):
+        # Prendiamo il nome del vino dal slot
+        wine_name = tracker.get_slot("wine_name")
+        
+        if not wine_name:
+            dispatcher.utter_message(text="Which wine would you like to know about? 🍷")
+            return []
+
+        # Carichiamo il CSV
+        df = pd.read_csv("WineDataset.csv")
+        
+        # Cerchiamo il vino (usiamo case=False per ignorare maiuscole/minuscole)
+        wine = df[df['Title'].str.contains(str(wine_name), case=False, na=False)]
+        
+        if not wine.empty:
+            # Prendiamo la prima riga trovata
+            data = wine.iloc[0]
+            
+            # Costruiamo il messaggio leggendo le colonne del CSV
+            # Assicuriamoci che i nomi delle colonne qui corrispondano al file (es: Price, Region, Pairing)
+            msg = (f"🔍 **Details for {data['Title']}**:\n\n"
+                   f"💰 **Price:** {data.get('Price', 'N/A')}\n"
+                   f"🍇 **Grape:** {data.get('Grape', 'N/A')}\n"
+                   f"🌍 **Country:** {data.get('Country', 'N/A')}\n"
+                   f"📍 **Region/Appellation:** {data.get('Region', 'N/A')} / {data.get('Appellation', 'N/A')}\n"
+                   f"📅 **Vintage:** {data.get('Vintage', 'N/A')}\n"
+                   f"🍾 **ABV (Alcohol):** {data.get('ABV', 'N/A')}\n"
+                   f"✨ **Style:** {data.get('Style', 'N/A')}\n"
+                   f"🍷 **Characteristics:** {data.get('Characteristics', 'N/A')}\n\n"
+                   f"📝 **Description:** {data.get('Description', 'N/A')}")
+            
+            dispatcher.utter_message(text=msg)
+        else:
+            dispatcher.utter_message(text=f"Mi dispiace, non ho trovato il vino '{wine_name}' nel mio catalogo. 🥺")
+            
+        return []
