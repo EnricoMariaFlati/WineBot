@@ -155,3 +155,13 @@ nlu:
     - what can you tell me about [Tempranillo](wine_name)?
     - [Sangiovese](wine_name)
     - [Nebbiolo](wine_name)
+    - [Barbera](wine_name)
+    - [Sauvignon Blanc](wine_name)
+    - [Syrah](wine_name)
+    - [Zinfandel](wine_name)
+    - [Riesling](wine_name)
+    - [Malbec](wine_name)
+    - [Tempranillo](wine_name)
+    - [Chardonnay](wine_name)
+    - [Cabernet](wine_name)
+    
