@@ -164,4 +164,22 @@ nlu:
     - [Tempranillo](wine_name)
     - [Chardonnay](wine_name)
     - [Cabernet](wine_name)
+
+- intent: compare_wines
+  examples: |
+    - compare [Merlot](wine_1) and [Cabernet](wine_2)
+    - is [Chardonnay](wine_1) or [Pinot Noir](wine_2) better?
+    - could you compare [Barolo](wine_1) and [Chianti](wine_2)?
+    - which one is better, [Sangiovese](wine_1) or [Nebbiolo](wine_2)?
+    - compare [Syrah](wine_1) and [Zinfandel](wine_2)
+    - which one is better, [Riesling](wine_1) or [Malbec](wine_2)?
+    - compare [Tempranillo](wine_1) and [Pinot Noir](wine_2).
+    - could you compare [Sauvignon Blanc](wine_1) and [Chardonnay](wine_2)?
+    - which one is better, [Merlot](wine_1) or [Cabernet](wine_2)?
+    - compare [Nebbiolo](wine_1) and [Barbera](wine_2)
+    - compare [Sangiovese](wine_1) and [Syrah](wine_2)
+    - which one is better, [Zinfandel](wine_1) or [Riesling](wine_2)?
+    - compare [Malbec](wine_1) and [Tempranillo](wine_2)
+    - could you compare [Chardonnay](wine_1) and [Cabernet](wine_2)?
+    - which one is better, [Pinot Noir](wine_1) or [Sauvignon Blanc](wine_2)?
     

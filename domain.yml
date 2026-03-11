@@ -14,6 +14,7 @@ intents:
   - wine_pairing
   - explain_specific_characteristic_of_wine
   - get_wine_details
+  - compare_wines
 
 entities:
   - budget
@@ -22,6 +23,8 @@ entities:
   - food
   - term # Per spiegare caratteristiche del vino in particolare
   - wine_name
+  - wine_1
+  - wine_2
 
 slots:
   budget:
@@ -71,6 +74,18 @@ slots:
     mappings:
     - type: from_entity
       entity: wine_name
+  wine_1:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: wine_1
+  wine_2:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: wine_2
 
 forms:
   wine_search_form:
@@ -85,6 +100,7 @@ actions:
   - action_wine_pairing
   - action_explain_specific_characteristic_of_wine
   - action_get_wine_details
+  - action_compare_wines
 
 # 2. Bot responses (Utterances)
 responses:
@@ -102,6 +118,7 @@ responses:
         🌍 **Wine selection:** I can help you find the perfect bottle based on your budget and origin.
         🍽️ **Food pairing**: Tell me what you're eating, and I'll suggest the best wine to match your dish! 🥂✨
         📖 Wine Glossary: Curious about technical terms like "tannins" or "full-bodied"? Ask me for a definition! 🔍🍷
+        ⚖️ Wine Comparison: Unsure which one to pick? Ask me to compare two wines (e.g., "Compare Merlot and Cabernet").
 
         Where shall we begin?
 

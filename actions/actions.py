@@ -222,3 +222,42 @@ class ActionGetWineDetails(Action):
             dispatcher.utter_message(text=f"Mi dispiace, non ho trovato il vino '{wine_name}' (o qualcosa di simile) nel mio catalogo. 🥺")
             
         return []
+    
+class ActionCompareWines(Action):
+    def name(self) -> Text:
+        return "action_compare_wines"
+
+    def run(self, dispatcher, tracker, domain):
+        w1 = tracker.get_slot("wine_1")
+        w2 = tracker.get_slot("wine_2")
+        
+        if not w1 or not w2:
+            dispatcher.utter_message(text="Please specify the two wines you'd like to compare! 🍷")
+            return []
+
+        df = pd.read_csv("WineDataset.csv")
+        # logica fuzzy se vuoi precisione!
+        wine1_data = df[df['Title'].str.contains(w1, case=False, na=False)]
+        wine2_data = df[df['Title'].str.contains(w2, case=False, na=False)]
+
+        if wine1_data.empty or wine2_data.empty:
+            dispatcher.utter_message(text="I couldn't find one or both of the wines in the catalog. 🥺")
+            return []
+
+        d1 = wine1_data.iloc[0]
+        d2 = wine2_data.iloc[0]
+
+        # Creazione della tabella comparativa 
+        msg = (f"⚖️ **Comparison: {d1['Title']} vs {d2['Title']}**\n\n"
+               f"| Characteristic | {d1['Title']} | {d2['Title']} |\n"
+               f"| :--- | :--- | :--- |\n"
+               f"| **Price** | {d1.get('Price')} | {d2.get('Price')} |\n"
+               f"| **Grape** | {d1.get('Grape')} | {d2.get('Grape')} |\n"
+               f"| **Style** | {d1.get('Style')} | {d2.get('Style')} |\n"
+               f"| **ABV %** | {d1.get('ABV')} | {d2.get('ABV')} |\n"
+               f"| **Origin** | {d1.get('Country')} | {d2.get('Country')} |\n"
+               f"| **Region** | {d1.get('Region')} / {d1.get('Appellation')} | {d2.get('Region')} / {d2.get('Appellation')} |\n"
+               f"| **Notes** | {d1.get('Characteristics')} | {d2.get('Characteristics')} |\n")
+        
+        dispatcher.utter_message(text=msg)
+        return []

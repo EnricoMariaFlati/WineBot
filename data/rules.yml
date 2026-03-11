@@ -70,3 +70,8 @@ rules:
   steps:
   - intent: get_wine_details
   - action: action_get_wine_details
+
+- rule: compare wines
+  steps:
+    - intent: compare_wines
+    - action: action_compare_wines
