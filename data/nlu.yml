@@ -216,6 +216,14 @@ nlu:
     - What is a good wine for [roasted chicken](food)?
     - Suggest a wine pairing for [seafood](food)?
     - I am eating [cheese](food), what should I drink?
+    - What wine would you recommend for [spicy food](food)?
+    - Can you suggest a wine to go with [dessert](food)?
+    - What wine pairs well with [vegetarian dishes](food)?
+    - I have [lamb](food) for dinner, what wine should I choose?
+    - What wine would you recommend for [barbecue](food)?
+    - Can you suggest a wine to go with [salad](food)?
+    - What wine pairs well with [grilled vegetables](food)?
+    - I am having [pizza](food), what wine should I drink?
 
 - intent: explain_specific_characteristic_of_wine
   examples: |
@@ -223,7 +231,38 @@ nlu:
     - Explain to me what [tannins](term) are.
     - What does [full-bodied](term) mean?
     - Can you explain [acidity](term)?
+    - What is [savoury](term) in wine?
+    - What does it mean if a wine is [oak-influence](term)?
+    - Can you explain what a [structured](term) wine is?
+    - What does it mean if a wine is [aromatic](term)?
+    - Can you explain the concept of [finish](term) in wine?
+    - What does it mean if a wine is [minerality](term)?
+    - What is [balsamic](term) in wine?
+    - What does it mean if a wine is [vintage](term)?
     - What is [terroir](term)?
+    - Can you explain what [vintage](term) means in wine?
+    - What does it mean if a wine is [floral](term)?
+    - Can you explain the concept of [citrus](term) in wine?
+    - What does it mean if a wine is [stone-fruit](term)?
+    - Can you explain what [tropical-fruit](term) means in wine?
+    - What does it mean if a wine is [red-fruit](term)?
+    - Can you explain the concept of [black-fruit](term) in wine?
+    - What does it mean if a wine is [cassis](term)?
+    - Can you explain what [herbaceous](term) means in wine?
+    - What does it mean if a wine is [earthy](term)?
+    - Can you explain the concept of [forest-floor](term) in wine?
+    - What does it mean if a wine is [spicy](term)?
+    - Can you explain what [peppery](term) means in wine?
+    - What does it mean if a wine is [smoky](term)?
+    - Can you explain the concept of [toasty](term) in wine?
+    - What does it mean if a wine is [buttery](term)?
+    - Can you explain what [creamy](term) means in wine?
+    - What does it mean if a wine is [cigar-box](term)?
+    - Can you explain the concept of [leathery](term) in wine?
+    - What does it mean if a wine is [jammy](term)?
+    - Can you explain what [dried-fruit](term) means in wine?
+    - What does it mean if a wine is [gooseberry](term)?
+    - Can you explain the concept of [flinty](term) in wine?
 
 - intent: get_wine_details
   examples: |
@@ -278,4 +317,4 @@ nlu:
     - abort
     - i want to stop
     - quit
-    - i want exit
+    - i want exit

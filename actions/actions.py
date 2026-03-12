@@ -5,7 +5,7 @@ from rasa_sdk import Action, Tracker
 from rasa_sdk.forms import FormValidationAction
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet, SessionStarted, ActionExecuted
-from rapidfuzz import process
+from rapidfuzz import process, fuzz
 
 class ActionListCharacteristics(Action):
     def name(self) -> Text:
@@ -283,8 +283,30 @@ class ActionExplainSpecificCharacteristicOfWine(Action):
             "finish": "The finish is the lasting impression or aftertaste that remains on your palate after swallowing the wine. A long, pleasant finish is often a sign of high quality and complexity. ⏳",
             "minerality": "Minerality is a sensation in the wine that reminds you of wet stones, flint, or saline notes. It is often found in wines grown in soils with specific geological compositions. 💎",
             "balsamic": "A 'balsamic' note refers to aromas reminiscent of Mediterranean herbs, resin, or sweet, dark woods. It adds a layer of aromatic complexity often found in well-aged, structured reds. 🌿",
-            "vintage": "The vintage is the year the grapes were harvested. It is crucial because climate variations between years can significantly change the character, quality, and potential of the wine. 📅"        
+            "vintage": "The vintage is the year the grapes were harvested. It is crucial because climate variations between years can significantly change the character, quality, and potential of the wine. 📅",        
+            "floral": "A 'floral' wine shows aromas reminiscent of flowers such as rose, jasmine, or orange blossom. It is usually elegant and fragrant. 🌸",
+            "citrus": "Citrus notes recall fruits like lemon, lime, or grapefruit. They often signal freshness and lively acidity in the wine. 🍋",
+            "stone-fruit": "Stone fruit aromas resemble fruits with a pit, such as peach, apricot, or nectarine. They are common in many aromatic white wines. 🍑",
+            "tropical-fruit": "Tropical fruit notes evoke aromas like pineapple, mango, or passion fruit, often found in warm-climate white wines. 🍍",
+            "red-fruit": "Red fruit aromas include notes like strawberry, raspberry, and red cherry. They often appear in lighter red wines. 🍓",
+            "black-fruit": "Black fruit notes recall blackberry, blackcurrant, and black plum, typical of richer and more powerful red wines. 🍇",
+            "cassis": "Cassis refers to the aroma of blackcurrant. It is a classic descriptor often associated with Cabernet Sauvignon wines. 🫐",
+            "herbaceous": "An 'herbaceous' wine shows aromas reminiscent of fresh herbs such as basil, mint, or cut grass. 🌿",
+            "earthy": "Earthy wines evoke aromas of soil, mushrooms, or forest floor, adding complexity and a natural character. 🌱",
+            "forest-floor": "This term refers to aromas reminiscent of damp leaves, mushrooms, and woodland soil, often found in aged red wines. 🍂",
+            "spicy": "A spicy wine has aromas reminiscent of spices such as pepper, clove, cinnamon, or nutmeg. 🌶️",
+            "peppery": "Peppery wines show notes similar to black or white pepper, commonly found in varieties like Syrah. 🌶️",
+            "smoky": "A smoky wine has aromas reminiscent of smoke, toasted wood, or charred elements, often from oak aging or certain terroirs. 🔥",
+            "toasty": "Toasty notes recall toasted bread, roasted nuts, or baked pastry, often developed during oak aging or lees aging. 🍞",
+            "buttery": "A buttery wine shows creamy aromas reminiscent of butter or cream, often associated with Chardonnay that underwent malolactic fermentation. 🧈",
+            "creamy": "A creamy wine has a smooth, rounded mouthfeel and aromas reminiscent of cream, custard, or soft dairy notes. 🥛",
+            "cigar-box": "This descriptor refers to aromas of cedar wood and tobacco leaves, often found in aged Cabernet-based wines. 🚬",
+            "leathery": "Leathery wines develop aromas reminiscent of leather or saddle, typically appearing as red wines age. 🐎",
+            "dried-fruit": "Dried fruit aromas recall raisins, figs, or dried dates, often found in richer or aged wines. 🍇",
+            "gooseberry": "Gooseberry is a tart green fruit aroma commonly associated with Sauvignon Blanc wines. 🟢",
+            "flinty": "Flinty wines have aromas reminiscent of struck stone or wet flint, often linked to strong minerality. 🪨"
         }
+
         # Ricerca della definizione
         if term and term.lower() in definitions:
             explanation = definitions[term.lower()]
@@ -345,39 +367,47 @@ class ActionCompareWines(Action):
     def name(self) -> Text:
         return "action_compare_wines"
 
-    def run(self, dispatcher, tracker, domain):
-        w1 = tracker.get_slot("wine_1")
-        w2 = tracker.get_slot("wine_2")
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain):
+        w1_input = tracker.get_slot("wine_1")
+        w2_input = tracker.get_slot("wine_2")
         
-        if not w1 or not w2:
-            dispatcher.utter_message(text="Please specify the two wines you'd like to compare! 🍷")
-            return []
-
+        # Load dataset
         df = pd.read_csv("WineDataset.csv")
-        # logica fuzzy se vuoi precisione!
-        wine1_data = df[df['Title'].str.contains(w1, case=False, na=False)]
-        wine2_data = df[df['Title'].str.contains(w2, case=False, na=False)]
+        titles = df['Title'].tolist()
 
-        if wine1_data.empty or wine2_data.empty:
-            dispatcher.utter_message(text="I couldn't find one or both of the wines in the catalog. 🥺")
+        # Fuzzy matching logic
+        def get_best_match(user_input):
+            if not user_input: return None
+            match = process.extractOne(user_input, titles, scorer=fuzz.WRatio)
+            # Threshold set to 70 for reliability
+            return df[df['Title'] == match[0]].iloc[0] if match[1] > 70 else None
+
+        d1 = get_best_match(w1_input)
+        d2 = get_best_match(w2_input)
+
+        if d1 is None or d2 is None:
+            dispatcher.utter_message(text="I couldn't find one or both of the wines. Please check the spelling and try again! 🍷")
             return []
 
-        d1 = wine1_data.iloc[0]
-        d2 = wine2_data.iloc[0]
-
-        # Creazione della tabella comparativa 
-        msg = (f"⚖️ **Comparison: {d1['Title']} vs {d2['Title']}**\n\n"
-               f"| Characteristic | {d1['Title']} | {d2['Title']} |\n"
-               f"| :--- | :--- | :--- |\n"
-               f"| **Price** | {d1.get('Price')} | {d2.get('Price')} |\n"
-               f"| **Grape** | {d1.get('Grape')} | {d2.get('Grape')} |\n"
-               f"| **Style** | {d1.get('Style')} | {d2.get('Style')} |\n"
-               f"| **ABV %** | {d1.get('ABV')} | {d2.get('ABV')} |\n"
-               f"| **Origin** | {d1.get('Country')} | {d2.get('Country')} |\n"
-               f"| **Region** | {d1.get('Region')} / {d1.get('Appellation')} | {d2.get('Region')} / {d2.get('Appellation')} |\n"
-               f"| **Notes** | {d1.get('Characteristics')} | {d2.get('Characteristics')} |\n")
+        # Mobile-friendly comparison layout
+        msg = (f"⚖️ *WINE COMPARISON*\n\n"
+               f"🍷 *{d1['Title']}*\n"
+               f"💰 Price: {d1['Price']}\n"
+               f"🍇 Grape: {d1['Grape']}\n"
+               f"🌍 Origin: {d1['Country']}\n"
+               f"⚡ ABV: {d1['ABV']}\n"
+               f"📝 Notes: {str(d1['Characteristics'])[:40]}...\n\n"
+               f"--- VS ---\n\n"
+               f"🍷 *{d2['Title']}*\n"
+               f"💰 Price: {d2['Price']}\n"
+               f"🍇 Grape: {d2['Grape']}\n"
+               f"🌍 Origin: {d2['Country']}\n"
+               f"⚡ ABV: {d2['ABV']}\n"
+               f"📝 Notes: {str(d2['Characteristics'])[:40]}...\n\n"
+               f"--- ✨ ---\n"
+               f"Want to know more? Type: 'Tell me about {d1['Title'][:10]}...' or 'Tell me about {d2['Title'][:10]}...'")
         
-        dispatcher.utter_message(text=msg)
+        dispatcher.utter_message(text=msg, parse_mode="Markdown")
         return []
 
 class ActionSessionStart(Action):
