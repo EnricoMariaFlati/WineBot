@@ -1,0 +1,52 @@
+version: "3.1"
+
+stories:
+  - story: User starts a new search after a previous one
+    steps:
+      - intent: wine_search
+      - action: wine_search_form
+      - active_loop: wine_search_form
+      - active_loop: null
+      - slot_was_set:
+          - requested_slot: null
+      - action: action_search_wine
+      - action: action_reset_wine_slots
+      # Il bot ha mostrato i vini (o gli 0 risultati) e svuotato la memoria.
+      # L'utente decide di fare una nuova ricerca inserendo nuovi parametri:
+      - intent: wine_search 
+      - action: wine_search_form
+      - active_loop: wine_search_form
+
+
+
+  - story: User wants to try again after search
+    steps:
+      - intent: wine_search
+      - action: wine_search_form
+      - active_loop: wine_search_form
+      - active_loop: null
+      - slot_was_set:
+          - requested_slot: null
+      - action: action_search_wine
+      - action: action_reset_wine_slots
+      # Il bot ha appena fatto la domanda. L'utente risponde "sì":
+      - intent: affirm
+      # Dato che gli slot sono già vuoti, rilanciamo semplicemente il form
+      - action: wine_search_form
+      - active_loop: wine_search_form
+
+  # SCENARIO 2: L'utente dice "No" e non vuole riprovare
+  - story: User does not want to try again after search
+    steps:
+      - intent: wine_search
+      - action: wine_search_form
+      - active_loop: wine_search_form
+      - active_loop: null
+      - slot_was_set:
+          - requested_slot: null
+      - action: action_search_wine
+      - action: action_reset_wine_slots
+      # Il bot ha appena fatto la domanda. L'utente risponde "no":
+      - intent: deny
+      # Il bot accetta il rifiuto educatamente. La memoria è già vuota.
+      - action: utter_anything_else

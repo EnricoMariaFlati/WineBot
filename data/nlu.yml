@@ -38,6 +38,25 @@ nlu:
     - have a good evening
     - talk to you later
 
+- intent: thank_you
+  examples: |
+    - thanks
+    - thank you
+    - thanks a lot
+    - thanks for the help
+
+- intent: ask_capabilities
+  examples: |
+    - what can you do?
+    - how can you help me?
+    - give me a hand
+    - what kind of information do you have about wines?
+    - what can I ask you?
+    - what are your capabilities?
+    - can you list what you can do?
+    - I don't know what to ask
+    - help me
+    - what parameters do you use to search for wines?
 
 - intent: affirm
   examples: |
@@ -53,6 +72,9 @@ nlu:
     - absolutely
     - perfect
     - of course
+    - ok thanks
+    - perfect, thanks!
+    - great, thank you
 
 - intent: deny
   examples: |
@@ -70,18 +92,34 @@ nlu:
     - I don't want to
 
 
-# Intents creati per il progetto del wine bot
+- intent: ask_explain_characteristics
+  examples: |
+    - what are the characteristics of your wines?
+    - list wine characteristics
+    - can you tell me the available wine characteristics?
+    - what features do the wines have?
+    - show me the characteristics list
+    - what kind of flavors are there?
+    - which characteristics can I find?
+    - what are these characteristics?
+    - what do you mean by characteristics?
+    - explain what a characteristic is
+    - what do you mean by flavor notes?
+    - what is a wine characteristic?
+    - explain wine characteristics
+
+- intent: ask_explain_grape
+  examples: |
+    - what is a grape?
+    - what do you mean by grape variety?
+    - can you explain what grape means?
+    - i don't know what a grape is
+    - what are the different types of grapes?
+    - definition of grape
+    - grape info
 
 - intent: wine_search
   examples: |
-    - I am looking for a [white](wine_type) wine
-    - search for a [Tempranillo](grape) from [Spain](country)
-    - do you have any [Chardonnay](grape) wine?
-    - suggest a [Red](wine_type) wine
-    - I would like to drink a wine from [California](country)
-    - can you find me a [Tempranillo](grape)?
-    - looking for a bottle of wine
-    - I want to buy [Chardonnay](grape)
     - i want to find a wine
     - help me choose a wine
     - i need a wine recommendation
@@ -89,6 +127,61 @@ nlu:
     - search for a wine
     - find me a good bottle
     - I am looking for a wine
+    - I am looking for a [red](Type) wine under [30 dollars](Price)
+    - Can you recommend a good [French](Country) [white](Type) wine?
+    - Do you have a [2015](Vintage) [Cabernet Sauvignon](Grape)?
+    - I want a [sweet](Characteristics) [sparkling](Type) wine for dessert
+    - Find me a [full-bodied](Style) wine from [Tuscany](Region)
+    - Show me some [Italian](Country) [reds](Type) around [50 euros](Price)
+    - I need a [white](Type) wine with low alcohol, maybe [11%](ABV)
+    - I would like to buy a bottle of [Sassicaia](Title)
+    - Suggest a [Chardonnay](Grape) with [vanilla and oak](Characteristics) notes
+    - I'm searching for a [Champagne AOC](Appellation) from [2018](Vintage)
+    - Do you have any [dry](Style) [rosé](Type) from [Spain](Country)?
+    - I prefer a light wine, maybe around [10.5%](ABV)
+    - Find me something strong with [14%](ABV) alcohol
+    - I would love to try a [Chablis Grand Cru](Appellation)
+    - Do you have any [Barolo DOCG](Appellation) in stock?
+    - Show me some white wines from [Bordeaux](Region)
+    - I am looking for a red from [Piedmont](Region)
+    - Can you check if you have [Dom Perignon](Title) available?
+    - I want to buy a bottle of [Tignanello](Title)
+
+- intent: dont_care
+    # Questo intent serve per intercettare i casi in cui il bot chiede un parametro
+    # specifico (es. nazione, budget, uva) e l'utente non ha preferenze.
+    # Permette al form di sbloccarsi assegnando un valore neutro allo slot.
+  examples: |
+      - i don't care
+      - whatever
+      - anything is fine
+      - you choose
+      - surprise me
+      - i don't know
+      - i have no preference
+      - it doesn't matter
+      - up to you
+      - any of them will do
+      - i'm not sure
+      - any is good
+
+- intent: inform
+  examples: |
+    - [Merlot](Grape)
+    - [Chardonnay](Grape)
+    - [Montepulciano](Grape)
+    - [Pinot Noir](Grape)
+    - [Sangiovese](Grape)
+    - [Italy](Country)
+    - [France](Country)
+    - [Spain](Country)
+    - [70](Price)
+    - [20](Price)
+    - [100 dollars](Price)
+    - [fruity](Characteristics)
+    - [dry](Characteristics)
+    - [vanilla](Characteristics)
+    - [oak](Characteristics)
 
 - intent: ask_capabilities
   examples: |
@@ -102,16 +195,8 @@ nlu:
     - I don't know what to ask
     - help me
     - what parameters do you use to search for wines?
-    
-- intent: ask_characteristics
-  examples: |
-    - what are the characteristics of your wines?
-    - list wine characteristics
-    - can you tell me the available wine characteristics?
-    - what features do the wines have?
-    - show me the characteristics list
-    - what kind of flavors are there?
-    - which characteristics can I find?
+
+
 
 - intent: out_of_scope_of_bot
   examples: |
@@ -153,17 +238,17 @@ nlu:
     - tell me more about [Riesling](wine_name)  
     - give me information about [Malbec](wine_name)
     - what can you tell me about [Tempranillo](wine_name)?
-    - [Sangiovese](wine_name)
-    - [Nebbiolo](wine_name)
-    - [Barbera](wine_name)
-    - [Sauvignon Blanc](wine_name)
-    - [Syrah](wine_name)
-    - [Zinfandel](wine_name)
-    - [Riesling](wine_name)
-    - [Malbec](wine_name)
-    - [Tempranillo](wine_name)
-    - [Chardonnay](wine_name)
-    - [Cabernet](wine_name)
+    - detail on [Sangiovese](wine_name)
+    - let's look at [Nebbiolo](wine_name)
+    - I need info on [Barbera](wine_name)
+    - looking up [Sauvignon Blanc](wine_name)
+    - details for [Syrah](wine_name)
+    - what about [Zinfandel](wine_name)?
+    - tell me about [Riesling](wine_name)
+    - do you know [Malbec](wine_name)?
+    - describe [Tempranillo](wine_name)
+    - explain [Chardonnay](wine_name)
+    - detail on [Cabernet](wine_name)
 
 - intent: compare_wines
   examples: |
@@ -183,3 +268,14 @@ nlu:
     - could you compare [Chardonnay](wine_1) and [Cabernet](wine_2)?
     - which one is better, [Pinot Noir](wine_1) or [Sauvignon Blanc](wine_2)?
     
+- intent: cancel_search
+  examples: |
+    - i want to exit
+    - cancel
+    - stop
+    - i changed my mind
+    - exit search
+    - abort
+    - i want to stop
+    - quit
+    - i want exit

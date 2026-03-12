@@ -9,14 +9,30 @@ intents:
   - deny
   - wine_search
   - ask_capabilities
-  - ask_characteristics
   - out_of_scope_of_bot
   - wine_pairing
   - explain_specific_characteristic_of_wine
   - get_wine_details
   - compare_wines
+  - ask_explain_characteristics
+  - ask_explain_grape
+  - dont_care
+  - inform
+  - thank_you
+  - cancel_search
 
 entities:
+  - Title
+  - Price
+  - Grape
+  - Country
+  - Characteristics
+  - Type
+  - ABV
+  - Region
+  - Style
+  - Vintage
+  - Appellation
   - budget
   - grape
   - country
@@ -27,27 +43,123 @@ entities:
   - wine_2
 
 slots:
-  budget:
+  Title:
     type: text
+    influence_conversation: false
     mappings:
-    - type: from_text
-      conditions:
-      - active_loop: wine_search_form
-        requested_slot: budget
-  grape:
+      - type: from_entity
+        entity: Title
+  Price:
     type: text
+    influence_conversation: false
     mappings:
-    - type: from_text
-      conditions:
-      - active_loop: wine_search_form
-        requested_slot: grape
-  country:
+      - type: from_entity      # Estrae il prezzo se l'utente dice es. "30 dollars"
+        entity: Price
+      - type: from_intent      # Novità: Se l'utente dice "non lo so", salva "any"
+        intent: dont_care
+        value: "any"
+        conditions:
+          - active_loop: wine_search_form
+            requested_slot: Price
+      - type: from_text
+        not_intent:
+          - cancel_search
+        conditions:
+          - active_loop: wine_search_form
+            requested_slot: Price
+
+  Grape:
     type: text
+    influence_conversation: false
     mappings:
-    - type: from_text
-      conditions:
-      - active_loop: wine_search_form
-        requested_slot: country
+      - type: from_entity      # Estrae l'uva se l'utente dice es. "Chardonnay"
+        entity: Grape
+      - type: from_intent      # Novità: Se l'utente dice "fai tu", salva "any"
+        intent: dont_care
+        value: "any"
+        conditions:
+          - active_loop: wine_search_form
+            requested_slot: Grape
+      - type: from_text
+        not_intent:
+          - cancel_search
+        conditions:
+          - active_loop: wine_search_form
+            requested_slot: Grape
+
+  Country:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: Country
+      - type: from_intent
+        intent: dont_care
+        value: "any"
+        conditions:
+          - active_loop: wine_search_form
+            requested_slot: Country
+      - type: from_text
+        not_intent:
+          - cancel_search
+        conditions:
+          - active_loop: wine_search_form
+            requested_slot: Country
+
+  Characteristics:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: Characteristics
+      - type: from_intent
+        intent: dont_care
+        value: "any"
+        conditions:
+          - active_loop: wine_search_form
+            requested_slot: Characteristics
+      - type: from_text
+        not_intent:
+          - cancel_search
+        conditions:
+          - active_loop: wine_search_form
+            requested_slot: Characteristics
+  Type:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: Type
+  ABV:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: ABV
+  Region:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: Region
+  Style:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: Style
+  Vintage:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: Vintage
+  Appellation:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: Appellation
   characteristics_list:
     type: text
     mappings:
@@ -89,18 +201,26 @@ slots:
 
 forms:
   wine_search_form:
+    ignored_intents:
+      - ask_explain_characteristics
+      - ask_explain_grape
+      - cancel_search
     required_slots:
-      - budget
-      - grape
-      - country
+      - Price  
+      - Grape   
+      - Country 
+      - Characteristics 
 
 actions:
+  - action_session_start
   - action_list_characteristics
   - action_search_wine
   - action_wine_pairing
   - action_explain_specific_characteristic_of_wine
   - action_get_wine_details
   - action_compare_wines
+  - action_reset_wine_slots
+  - validate_wine_search_form
 
 # 2. Bot responses (Utterances)
 responses:
@@ -122,14 +242,38 @@ responses:
 
         Where shall we begin?
 
-  utter_ask_budget:
-    - text: "What is your maximum budget for the bottle?"
+  utter_ask_Price:
+    - text: "What is your budget for the bottle?"
 
-  utter_ask_grape:
+  utter_ask_Grape:
     - text: "Which grape variety are you looking for?"
-
-  utter_ask_country:
+  
+  utter_ask_Country:
     - text: "From which country would you like the wine to be?"
+
+  utter_ask_Characteristics:
+    - text: "Do you have any specific characteristics in mind?"
+
+  # --- SPIEGAZIONI (INTERRUZIONI) ---
+  utter_explain_grape:
+    - text: "The grape refers to the variety of fruit used to make the wine. Some popular examples are Chardonnay, Sauvignon Blanc, Merlot, or Pinot Noir."
+
+  utter_explain_characteristics:
+    - text: "By characteristics, I mean the specific aromas and flavors you enjoy in a wine, like 'fruity', 'vanilla', 'oak', 'spicy', or 'floral' notes."
+
+
+  utter_cancel_search:
+    - text: "Ok, you have exited the search. Here is what I can do for you:"
+
+  utter_welcome:
+    - text: "You're very welcome! 🍷 Let me know if you'd like to search for another bottle, or if you want to know more about wine characteristics."
+
+  utter_welcome_capabilities:
+    - text: "You're very welcome! 🍷 If I can do another thing for you just ask me. Here is a reminder of my capabilities:"
+  
+  utter_anything_else:
+    - text: "Alright, no problem! Let me know if you want to explore other wine characteristics or if you need anything else."
+    
 
   utter_characteristics_list:
     - text: "Here are the available wine characteristics:\n{characteristics_list}"

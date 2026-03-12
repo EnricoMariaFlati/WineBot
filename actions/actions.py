@@ -2,8 +2,9 @@ import pandas as pd
 import re
 from typing import Any, Text, Dict, List
 from rasa_sdk import Action, Tracker
+from rasa_sdk.forms import FormValidationAction
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.events import SlotSet
+from rasa_sdk.events import SlotSet, SessionStarted, ActionExecuted
 from rapidfuzz import process
 
 class ActionListCharacteristics(Action):
@@ -35,74 +36,191 @@ class ActionListCharacteristics(Action):
             
         return [SlotSet("characteristics_list", response_text)]
 
+class ValidateWineSearchForm(FormValidationAction):
+    def name(self) -> Text:
+        return "validate_wine_search_form"
+
+    async def required_slots(
+        self,
+        domain_slots: List[Text],
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[Text]:
+        return domain_slots.copy()
+
+
+    def extract_grape(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> Dict[Text, Any]:
+        
+        text_input = tracker.latest_message.get("text")
+        if not text_input:
+            return {}
+            
+        return {"Grape": text_input}
+
+
+    def extract_characteristics(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> Dict[Text, Any]:
+        
+        text_input = tracker.latest_message.get("text")
+        if not text_input:
+            return {}
+
+        import re
+        words = re.findall(r'\b\w+\b', text_input.lower())
+        
+        # Very simple extraction logic based on the text. 
+        extracted = []
+        for word in words:
+            if len(word) > 2 and word not in ["and", "or", "the", "with", "characteristics", "flavors", "tastes"]:
+                extracted.append(word.capitalize())
+        
+        if not extracted:
+            return {"Characteristics": text_input} 
+            
+        # keep max 3
+        extracted = extracted[:3]
+        return {"Characteristics": ", ".join(extracted)}
+
+    def validate_Price(
+        self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]
+    ) -> Dict[Text, Any]:
+        
+        valore_testo = str(slot_value).lower()
+        
+        # Gestione del caso "non importa"
+        if valore_testo in ["any", "dont care", "i don't care", "dont_care"]:
+            return {"Price": "any"}
+            
+        # MAGIA REGEX: Trova tutte le sequenze di numeri nella stringa
+        # Se l'utente dice "under 70 dollars", numbers diventerà ['70']
+        import re
+        numbers = re.findall(r'\d+', valore_testo)
+        
+        if numbers:
+            # Prendiamo il primo numero trovato e lo restituiamo come stringa pulita
+            return {"Price": numbers[0]} 
+            
+        # Se non trova nessun numero (es. l'utente ha scritto "cheap"), resetta lo slot
+        return {"Price": None}
+
+
 
 class ActionSearchWine(Action):
     def name(self) -> Text:
         return "action_search_wine"
 
-    def _clean_price(self, price_str):
-        if not isinstance(price_str, str):
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        # 1. CARICAMENTO DEL DATASET
+        try:
+            # Assicurati che il nome del file CSV sia corretto e si trovi nella root del progetto
+            df = pd.read_csv("WineDataset.csv")
+        except FileNotFoundError:
+            dispatcher.utter_message(text="I'm sorry, I cannot access the wine database right now.")
+            return []
+
+        # 2. RECUPERO DEGLI SLOT
+        price = tracker.get_slot("Price")
+        grape = tracker.get_slot("Grape")
+        country = tracker.get_slot("Country")
+        characteristics = tracker.get_slot("Characteristics")
+        
+        # 3. FILTRAGGIO DINAMICO
+        filtered_df = df.copy()
+
+        if grape and grape.strip().lower() != "any":
+            termine = grape.strip()
+            # regex=False previene errori con caratteri speciali
+            filtered_df = filtered_df[filtered_df['Grape'].astype(str).str.contains(termine, case=False, regex=False, na=False)]
+
+        if country and country.strip().lower() != "any":
+            termine = country.strip()
+            filtered_df = filtered_df[filtered_df['Country'].astype(str).str.contains(termine, case=False, regex=False, na=False)]
+
+        if characteristics and characteristics.strip().lower() != "any":
+            termine = characteristics.strip()
+            filtered_df = filtered_df[filtered_df['Characteristics'].astype(str).str.contains(termine, case=False, regex=False, na=False)]
+
+        if price and str(price).lower() != "any":
             try:
-                return float(price_str)
-            except:
-                return float('inf')
-        # Extract digits and decimal point using regex
-        match = re.search(r'\d+(\.\d+)?', price_str)
-        if match:
-            return float(match.group())
-        return float('inf')
+                # 1. Convertiamo il valore dello slot (es. "70") in un numero decimale (float)
+                limite_prezzo = float(price)
+                
+                # 2. Creiamo una colonna temporanea pulita nel dataframe.
+                # Questa regex [^\d.] rimuove tutto ciò che NON è un numero o un punto (via i simboli $ o €)
+                prezzi_puliti = filtered_df['Price'].astype(str).str.replace(r'[^\d.]', '', regex=True)
+                
+                # Trasformiamo la colonna pulita in veri numeri (se ci sono errori, mette NaN)
+                prezzi_numerici = pd.to_numeric(prezzi_puliti, errors='coerce')
+                
+                # 3. FILTRO MAGICO: Prendi solo i vini il cui prezzo numerico è <= 70
+                filtered_df = filtered_df[prezzi_numerici <= limite_prezzo]
+                
+            except ValueError:
+                # Se qualcosa va storto con la conversione, stampiamo un errore nel terminale (utile per il debug)
+                print(f"Errore nella conversione del prezzo: {price}")
+        # 4. GESTIONE DEI RISULTATI E OUTPUT
+        numero_risultati = len(filtered_df)
+
+        if numero_risultati == 0:
+            # SCENARIO A: 0 risultati
+            dispatcher.utter_message(
+                text="I'm sorry, I couldn't find any wine matching all these specific criteria in my cellar.\nLet's try again! Could you provide different criteria?"
+            )
+
+        else:
+            # Abbiamo trovato dei risultati! Prepariamo il testo introduttivo e i vini da mostrare
+            if 1 <= numero_risultati <= 5:
+                # SCENARIO B: Da 1 a 5 risultati (Li mostriamo tutti)
+                if numero_risultati == 1:
+                    intro = "I found exactly **1 perfect wine** for you:\n\n"
+                else:
+                    intro = f"Great choices! I found **{numero_risultati} wines** that match your request. Here they are:\n\n"
+                vini_da_mostrare = filtered_df
+
+            else:
+                # SCENARIO C: Più di 5 risultati (Estraiamo 5 campioni casuali)
+                intro = f"We have many wines matching your criteria! I propose 5 of the best ones for you:\n\n"
+                vini_da_mostrare = filtered_df.sample(5)
+
+            # --- Ciclo di Formattazione Unico ---
+            lista_formattata = intro
+            
+            for index, vino in vini_da_mostrare.iterrows():
+                titolo = vino['Title']
+                prezzo = vino['Price']
+                paese = vino['Country']
+                
+                lista_formattata += f"🍷 **{titolo}** | 💰 {prezzo} | 🌍 {paese}\n"
+                lista_formattata += "—" * 15 + "\n\n"
+            
+            # Inviamo il messaggio finale al bot
+            dispatcher.utter_message(text=lista_formattata)
+
+        return []
+
+
+class ActionResetWineSlots(Action):
+    def name(self) -> Text:
+        return "action_reset_wine_slots"
 
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
-        budget_str = tracker.get_slot("budget")
-        grape = tracker.get_slot("grape")
-        country = tracker.get_slot("country")
-
-        try:
-            df = pd.read_csv("WineDataset.csv")
-        except Exception as e:
-            return [SlotSet("wine_search_results", "Sorry, I could not read the wine database.")]
-
-        try:
-            budget = float(budget_str) if budget_str else float('inf')
-        except (ValueError, TypeError):
-            budget = float('inf')
-
-        df_filtered = df.copy()
-        
-        if 'Price' in df_filtered.columns:
-            df_filtered['NumericPrice'] = df_filtered['Price'].apply(self._clean_price)
-            df_filtered = df_filtered[df_filtered['NumericPrice'] <= budget]
-
-        if grape and 'Grape' in df_filtered.columns:
-            str_grape = str(grape).lower()
-            df_filtered = df_filtered[df_filtered['Grape'].astype(str).str.lower().str.contains(str_grape, na=False)]
-
-        if country and 'Country' in df_filtered.columns:
-            str_country = str(country).lower()
-            df_filtered = df_filtered[df_filtered['Country'].astype(str).str.lower().str.contains(str_country, na=False)]
-
-        if df_filtered.empty:
-            return [SlotSet("wine_search_results", "I couldn't find any wines matching your criteria.")]
-
-        if len(df_filtered) > 5:
-            df_filtered = df_filtered.sort_values(by="NumericPrice", ascending=False).head(5)
-
-        results = []
-        for index, row in df_filtered.iterrows():
-            title = row.get('Title', 'Unknown Title')
-            description = row.get('Description', 'No description available')
-            chars = row.get('Characteristics', 'None')
-            price = row.get('Price', 'N/A')
-            
-            wine_info = f"- **{title}**\n  Price: {price}\n  Characteristics: {chars}\n  Description: {description}"
-            results.append(wine_info)
-
-        response_text = "\n\n".join(results)
-        
-        return [SlotSet("wine_search_results", response_text)]
+        # Resettiamo tutti gli slot a None per permettere una nuova ricerca pulita
+        return [
+            SlotSet("Price", None),
+            SlotSet("Grape", None),
+            SlotSet("Country", None),
+            SlotSet("Characteristics", None)
+        ]
    
 class ActionWinePairing(Action):
     def name(self) -> Text:
@@ -261,3 +379,27 @@ class ActionCompareWines(Action):
         
         dispatcher.utter_message(text=msg)
         return []
+
+class ActionSessionStart(Action):
+    def name(self) -> Text:
+        return "action_session_start"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        # the session should begin with a `session_started` event
+        events = [SessionStarted()]
+
+        # optionally, fetch any slots that we might want to carry over
+        for key, value in tracker.slots.items():
+            if value is not None:
+                events.append(SlotSet(key=key, value=value))
+
+        # trigger the welcome/capabilities message
+        dispatcher.utter_message(response="utter_capabilities")
+
+        # an `action_listen` should be added at the end as a user message follows
+        events.append(ActionExecuted("action_listen"))
+
+        return events

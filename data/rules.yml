@@ -21,15 +21,12 @@ rules:
   - intent: ask_capabilities
   - action: utter_capabilities
 
-- rule: List wine characteristics
-  steps:
-  - intent: ask_characteristics
-  - action: action_list_characteristics
-  - action: utter_characteristics_list
+
 
 - rule: Activate wine search form
   steps:
   - intent: wine_search
+  # RIMOSSO: action_reset_wine_slots per non cancellare la frase dell'utente
   - action: wine_search_form
   - active_loop: wine_search_form
 
@@ -42,7 +39,19 @@ rules:
   - slot_was_set:
     - requested_slot: null
   - action: action_search_wine
-  - action: utter_wine_search_results
+  - action: action_reset_wine_slots # CORRETTO: A ricerca finita, svuotiamo per la prossima
+
+- rule: Explain characteristics anytime
+  steps:
+  - intent: ask_explain_characteristics
+  - action: utter_explain_characteristics
+  - action: action_list_characteristics
+  - action: utter_characteristics_list
+
+- rule: Explain grape anytime
+  steps:
+  - intent: ask_explain_grape
+  - action: utter_explain_grape
 
 - rule: Handle out-of-scope_of_bot requests
   steps:
@@ -75,3 +84,20 @@ rules:
   steps:
     - intent: compare_wines
     - action: action_compare_wines
+
+- rule: Cancel wine search form
+  condition:
+  - active_loop: wine_search_form
+  steps:
+  - intent: cancel_search
+  - action: action_deactivate_loop
+  - active_loop: null
+  - action: action_reset_wine_slots
+  - action: utter_cancel_search
+  - action: utter_capabilities
+
+- rule: Respond to thank you anytime
+  steps:
+  - intent: thank_you
+  - action: utter_welcome_capabilities
+  - action: utter_capabilities
