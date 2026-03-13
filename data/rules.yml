@@ -26,7 +26,6 @@ rules:
 - rule: Activate wine search form
   steps:
   - intent: wine_search
-  # RIMOSSO: action_reset_wine_slots per non cancellare la frase dell'utente
   - action: wine_search_form
   - active_loop: wine_search_form
 
@@ -39,7 +38,7 @@ rules:
   - slot_was_set:
     - requested_slot: null
   - action: action_search_wine
-  - action: action_reset_wine_slots # CORRETTO: A ricerca finita, svuotiamo per la prossima
+  - action: action_reset_wine_slots 
 
 - rule: Explain characteristics anytime
   steps:

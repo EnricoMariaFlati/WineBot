@@ -50,3 +50,40 @@ stories:
       - intent: deny
       # Il bot accetta il rifiuto educatamente. La memoria è già vuota.
       - action: utter_anything_else
+
+  - story: Complete onboarding before search (Warm Start)
+    steps:
+      - intent: greet
+      - action: utter_greet
+      - intent: ask_capabilities
+      - action: utter_capabilities
+      - intent: wine_search
+      - action: wine_search_form
+      - active_loop: wine_search_form
+
+  - story: Interruption for grape explanation during search form
+    steps:
+      - intent: wine_search
+      - action: wine_search_form
+      - active_loop: wine_search_form
+      # The user interrupts the form for a FAQ
+      - intent: ask_explain_grape
+      - action: utter_explain_grape
+      # The bot remembers to resume the form
+      - action: wine_search_form
+      - active_loop: wine_search_form
+
+  - story: Complete and polite conversation cycle
+    steps:
+      - intent: greet
+      - action: utter_greet
+      - intent: wine_search
+      - action: wine_search_form
+      - active_loop: wine_search_form
+      - active_loop: null
+      - slot_was_set:
+          - requested_slot: null
+      - action: action_search_wine
+      - action: action_reset_wine_slots
+      - intent: goodbye
+      - action: utter_goodbye

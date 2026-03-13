@@ -120,37 +120,40 @@ nlu:
 
 - intent: wine_search
   examples: |
-    - i want to find a wine
-    - help me choose a wine
-    - i need a wine recommendation
-    - suggest a wine
-    - search for a wine
-    - find me a good bottle
-    - I am looking for a wine
-    - I am looking for a [red](Type) wine under [30 dollars](Price)
-    - Can you recommend a good [French](Country) [white](Type) wine?
-    - Do you have a [2015](Vintage) [Cabernet Sauvignon](Grape)?
-    - I want a [sweet](Characteristics) [sparkling](Type) wine for dessert
-    - Find me a [full-bodied](Style) wine from [Tuscany](Region)
-    - Show me some [Italian](Country) [reds](Type) around [50 euros](Price)
-    - I need a [white](Type) wine with low alcohol, maybe [11%](ABV)
-    - I would like to buy a bottle of [Sassicaia](Title)
-    - Suggest a [Chardonnay](Grape) with [vanilla and oak](Characteristics) notes
-    - I'm searching for a [Champagne AOC](Appellation) from [2018](Vintage)
-    - Do you have any [dry](Style) [rosé](Type) from [Spain](Country)?
-    - I prefer a light wine, maybe around [10.5%](ABV)
-    - Find me something strong with [14%](ABV) alcohol
-    - I would love to try a [Chablis Grand Cru](Appellation)
-    - Do you have any [Barolo DOCG](Appellation) in stock?
-    - Show me some white wines from [Bordeaux](Region)
-    - I am looking for a red from [Piedmont](Region)
-    - Can you check if you have [Dom Perignon](Title) available?
-    - I want to buy a bottle of [Tignanello](Title)
+      - i want to find a wine
+      - help me choose a wine
+      - i need a wine recommendation
+      - suggest a wine
+      - search for a wine
+      - find me a good bottle
+      - I am looking for a wine
+      - I am looking for a [red](Type) wine under [30 dollars](Price)
+      - Can you recommend a good [French](Country) [white](Type) wine?
+      - Do you have a [Cabernet Sauvignon](Grape)?
+      - I want a [sparkling](Type) wine under [40 dollars](Price)
+      - Find me a [red](Type) wine from [Spain](Country)
+      - Show me some [Italian](Country) [reds](Type) around [50 euros](Price)
+      - I need a [white](Type) wine under [20 dollars](Price)
+      - I would like to buy a bottle of [Merlot](Grape)
+      - Suggest a [Chardonnay](Grape) from [France](Country)
+      - I'm searching for a [rosé](Type) from [Spain](Country)
+      - Do you have any [white](Type) from [Italy](Country)?
+      - I prefer a wine around [15 euros](Price)
+      - Find me something under [10 euros](Price)
+      - I would love to try a [Pinot Noir](Grape) from [France](Country)
+      - Do you have any [Malbec](Grape) from [Argentina](Country) in stock?
+      - Show me some [white](Type) wines from [Germany](Country)
+      - I am looking for a [red](Type) wine from [Chile](Country)
+      - Can you check if you have [Riesling](Grape) available?
+      - I want to buy a bottle of [Shiraz](Grape) from [Australia](Country)
+      - i want a wine from [usa](Country), a [white](Type) wine that cost under [50 dollars](Price)
+      - do you have anything from [usa](Country)?
+      - I need a [red](Type) from [usa](Country)
+      - i want a wine from [usa](Country), a [white](Type) wine that cost under [50 dollars](Price)
+      - do you have anything from [usa](Country)?
+      - I need a [red](Type) from [usa](Country)
 
 - intent: dont_care
-    # Questo intent serve per intercettare i casi in cui il bot chiede un parametro
-    # specifico (es. nazione, budget, uva) e l'utente non ha preferenze.
-    # Permette al form di sbloccarsi assegnando un valore neutro allo slot.
   examples: |
       - i don't care
       - whatever
@@ -278,4 +281,4 @@ nlu:
     - abort
     - i want to stop
     - quit
-    - i want exit
+    - i want exit

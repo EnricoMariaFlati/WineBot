@@ -5,7 +5,9 @@ from rasa_sdk import Action, Tracker
 from rasa_sdk.forms import FormValidationAction
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet, SessionStarted, ActionExecuted
+from rasa_sdk.types import DomainDict
 from rapidfuzz import process
+import difflib
 
 class ActionListCharacteristics(Action):
     def name(self) -> Text:
@@ -40,72 +42,170 @@ class ValidateWineSearchForm(FormValidationAction):
     def name(self) -> Text:
         return "validate_wine_search_form"
 
-    async def required_slots(
-        self,
-        domain_slots: List[Text],
-        dispatcher: "CollectingDispatcher",
-        tracker: "Tracker",
-        domain: "DomainDict",
-    ) -> List[Text]:
-        return domain_slots.copy()
+    # Liste dei valori univoci dal Dataset
+    VALID_COUNTRIES = [
+        "Argentina", "Australia", "Austria", "Bulgaria", "Chile", "England", 
+        "France", "Georgia", "Germany", "Greece", "Hungary", "Italy", "Lebanon", 
+        "Mexico", "Moldova", "New Zealand", "Portugal", "Romania", "Scotland", 
+        "Serbia", "Slovenia", "South Africa", "Spain", "USA", "United Kingdom"
+    ]
+    
+    VALID_TYPES = [
+        "Brown", "Mixed", "Orange", "Red", "Rosé", "Tawny", "White"
+    ]
+    
+    VALID_GRAPES = [
+        "Agiorgitiko", "Aglianico", "Airen", "Albarino", "Alicante Bouschet", 
+        "Aligoté", "Alvarinho", "Arinto", "Assyrtiko", "Bacchus", "Barbera", 
+        "Black Muscat", "Cabernet Franc", "Cabernet Sauvignon", "Carignan", 
+        "Carménère", "Castelão", "Chardonnay", "Chenin Blanc", "Cinsault", 
+        "Colombard", "Cortese", "Corvina", "Dolcetto", "Falanghina", "Fernão Pires", 
+        "Feteasca Alba", "Fiano", "Furmint", "Gamay", "Garganega", "Garnacha", 
+        "Gewürztraminer", "Glera", "Godello", "Greco", "Grenache", "Grenache Blanc", 
+        "Grillo", "Grolleau", "Gruner Veltliner", "Huxelrebe", "Inzolia", "Jacquere", 
+        "Lambrusco Grasparossa", "Loureiro", "Macabeo", "Malagousia", "Malbec", 
+        "Malvasia", "Marsanne", "Mauzac", "Melon De Bourgogne", "Mencia", "Merlot", 
+        "Monastrell", "Montepulciano", "Moscato", "Mourvèdre", "Muscat", "Nebbiolo", 
+        "Negroamaro", "Nerello", "Nerello Mascalese", "Nero D'Avola", "Niellucciu", 
+        "Non Varietal", "Pais", "Palomino", "Pecorino", "Pedro Ximénez", "Picpoul", 
+        "Pinot Blanc", "Pinot Grigio", "Pinot Gris", "Pinot Meunier", "Pinot Noir", 
+        "Pinotage", "Primitivo", "Rara Neagra", "Riesling", "Rkatsiteli", "Rolle", 
+        "Rondinella", "Roussanne", "Sangiovese", "Saperavi", "Sauvignon Blanc", 
+        "Sauvignon Gris", "Shiraz", "Siegerrebe", "Syrah", "Syrah-Shiraz", "Sémillon", 
+        "Tempranillo", "Tibouren", "Tinta Barroca", "Tinta Roriz", "Torrontes", 
+        "Touriga Franca", "Touriga Nacional", "Trincadeira", "Turbiana", "Verdejo", 
+        "Verdicchio", "Vermentino", "Vespaiola", "Viognier", "Viura", "Xarel-Lo", 
+        "Xinomavro", "Zinfandel", "Zwieigelt"
+    ]
 
+    DONT_CARE_WORDS = ["any", "dont care", "i don't care", "dont_care", "whatever", "skip"]
 
-    def extract_grape(
-        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
-    ) -> Dict[Text, Any]:
+    def _handle_invalid_input(self, slot_name: Text, error_message: Text, dispatcher: CollectingDispatcher, tracker: Tracker) -> Dict[Text, Any]:
+        """
+        Funzione Helper per gestire i fallimenti e la regola dei 3 errori.
+        """
+        current_count = tracker.get_slot("retry_count") or 0.0
+        current_count += 1
+
+        if current_count >= 3:
+            # Terzo errore: Skip parametro
+            dispatcher.utter_message(
+                text=f"It seems we are having trouble with {slot_name}. Since it's invalid, I will not use it for our search. Let's move on!"
+            )
+            # Resetta il contatore e forza lo slot ad "any"
+            return {slot_name: "any", "retry_count": 0.0}
         
-        text_input = tracker.latest_message.get("text")
-        if not text_input:
-            return {}
-            
-        return {"Grape": text_input}
+        # Meno di 3 errori: Segnala l'errore e richiedi
+        dispatcher.utter_message(text=error_message)
+        return {slot_name: None, "retry_count": current_count}
 
-
-    def extract_characteristics(
-        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
-    ) -> Dict[Text, Any]:
-        
-        text_input = tracker.latest_message.get("text")
-        if not text_input:
-            return {}
-
-        import re
-        words = re.findall(r'\b\w+\b', text_input.lower())
-        
-        # Very simple extraction logic based on the text. 
-        extracted = []
-        for word in words:
-            if len(word) > 2 and word not in ["and", "or", "the", "with", "characteristics", "flavors", "tastes"]:
-                extracted.append(word.capitalize())
-        
-        if not extracted:
-            return {"Characteristics": text_input} 
-            
-        # keep max 3
-        extracted = extracted[:3]
-        return {"Characteristics": ", ".join(extracted)}
-
+    # ==========================================
+    # VALIDAZIONE: PRICE
+    # ==========================================
     def validate_Price(
-        self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]
+        self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: DomainDict
     ) -> Dict[Text, Any]:
+        valore_testo = str(slot_value).lower().strip()
         
-        valore_testo = str(slot_value).lower()
-        
-        # Gestione del caso "non importa"
-        if valore_testo in ["any", "dont care", "i don't care", "dont_care"]:
-            return {"Price": "any"}
+        if valore_testo in self.DONT_CARE_WORDS:
+            return {"Price": "any", "retry_count": 0.0}
             
-        # MAGIA REGEX: Trova tutte le sequenze di numeri nella stringa
-        # Se l'utente dice "under 70 dollars", numbers diventerà ['70']
-        import re
         numbers = re.findall(r'\d+', valore_testo)
-        
         if numbers:
-            # Prendiamo il primo numero trovato e lo restituiamo come stringa pulita
-            return {"Price": numbers[0]} 
+            return {"Price": numbers[0], "retry_count": 0.0} 
             
-        # Se non trova nessun numero (es. l'utente ha scritto "cheap"), resetta lo slot
-        return {"Price": None}
+        return self._handle_invalid_input(
+            "Price", 
+            "I'm sorry, I couldn't find a valid number for the price. Please enter a valid amount.", 
+            dispatcher, 
+            tracker
+        )
+
+    # ==========================================
+    # VALIDAZIONE: COUNTRY
+    # ==========================================
+    def validate_Country(
+        self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: DomainDict
+    ) -> Dict[Text, Any]:
+        valore_testo = str(slot_value).lower().strip()
+        
+        if valore_testo in self.DONT_CARE_WORDS:
+            return {"Country": "any", "retry_count": 0.0}
+            
+        valid_lower = [c.lower() for c in self.VALID_COUNTRIES]
+        
+        if valore_testo in valid_lower:
+            # Recuperiamo l'indice per restituire la stringa con la formattazione originale (Maiuscole)
+            idx = valid_lower.index(valore_testo)
+            return {"Country": self.VALID_COUNTRIES[idx], "retry_count": 0.0}
+            
+        return self._handle_invalid_input(
+            "Country", 
+            f"I'm sorry, '{slot_value}' is not a valid country in our database. Please enter a valid one.", 
+            dispatcher, 
+            tracker
+        )
+
+    # ==========================================
+    # VALIDAZIONE: TYPE
+    # ==========================================
+    def validate_Type(
+        self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: DomainDict
+    ) -> Dict[Text, Any]:
+        valore_testo = str(slot_value).lower().strip()
+        
+        if valore_testo in self.DONT_CARE_WORDS:
+            return {"Type": "any", "retry_count": 0.0}
+            
+        valid_lower = [t.lower() for t in self.VALID_TYPES]
+        
+        if valore_testo in valid_lower:
+            idx = valid_lower.index(valore_testo)
+            return {"Type": self.VALID_TYPES[idx], "retry_count": 0.0}
+            
+        return self._handle_invalid_input(
+            "Type", 
+            f"I'm sorry, '{slot_value}' is not a valid wine type. Please enter a valid one (e.g. Red, White, Rosé).", 
+            dispatcher, 
+            tracker
+        )
+
+    # ==========================================
+    # VALIDAZIONE: GRAPE
+    # ==========================================
+    def validate_Grape(
+        self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: DomainDict
+    ) -> Dict[Text, Any]:
+        valore_testo = str(slot_value).lower().strip()
+        
+        if valore_testo in self.DONT_CARE_WORDS:
+            return {"Grape": "any", "retry_count": 0.0}
+            
+        valid_lower = [g.lower() for g in self.VALID_GRAPES]
+        
+        # 1. Controllo esatto
+        if valore_testo in valid_lower:
+            idx = valid_lower.index(valore_testo)
+            return {"Grape": self.VALID_GRAPES[idx], "retry_count": 0.0}
+            
+        # 2. Controllo Fuzzy (Tolleri errori di battitura)
+        # Cerca somiglianze almeno dell'80% (cutoff=0.8)
+        matches = difflib.get_close_matches(valore_testo, valid_lower, n=1, cutoff=0.8)
+        
+        if matches:
+            idx = valid_lower.index(matches[0])
+            matched_grape = self.VALID_GRAPES[idx]
+            # Avvisiamo l'utente della correzione automatica
+            dispatcher.utter_message(text=f"I assumed you meant {matched_grape}.")
+            return {"Grape": matched_grape, "retry_count": 0.0}
+            
+        # 3. Fallimento
+        return self._handle_invalid_input(
+            "Grape", 
+            f"I'm sorry, '{slot_value}' is not a valid grape in our database. Please enter a valid one.", 
+            dispatcher, 
+            tracker
+        )
 
 
 
@@ -129,7 +229,7 @@ class ActionSearchWine(Action):
         price = tracker.get_slot("Price")
         grape = tracker.get_slot("Grape")
         country = tracker.get_slot("Country")
-        characteristics = tracker.get_slot("Characteristics")
+        wine_type = tracker.get_slot("Type")
         
         # 3. FILTRAGGIO DINAMICO
         filtered_df = df.copy()
@@ -143,9 +243,9 @@ class ActionSearchWine(Action):
             termine = country.strip()
             filtered_df = filtered_df[filtered_df['Country'].astype(str).str.contains(termine, case=False, regex=False, na=False)]
 
-        if characteristics and characteristics.strip().lower() != "any":
-            termine = characteristics.strip()
-            filtered_df = filtered_df[filtered_df['Characteristics'].astype(str).str.contains(termine, case=False, regex=False, na=False)]
+        if wine_type and wine_type.strip().lower() != "any":
+            termine = wine_type.strip()
+            filtered_df = filtered_df[filtered_df['Type'].astype(str).str.contains(termine, case=False, regex=False, na=False)]
 
         if price and str(price).lower() != "any":
             try:
@@ -219,7 +319,8 @@ class ActionResetWineSlots(Action):
             SlotSet("Price", None),
             SlotSet("Grape", None),
             SlotSet("Country", None),
-            SlotSet("Characteristics", None)
+            SlotSet("Type", None),
+            SlotSet("retry_count", 0.0)
         ]
    
 class ActionWinePairing(Action):
@@ -395,9 +496,6 @@ class ActionSessionStart(Action):
         for key, value in tracker.slots.items():
             if value is not None:
                 events.append(SlotSet(key=key, value=value))
-
-        # trigger the welcome/capabilities message
-        dispatcher.utter_message(response="utter_capabilities")
 
         # an `action_listen` should be added at the end as a user message follows
         events.append(ActionExecuted("action_listen"))

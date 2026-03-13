@@ -43,6 +43,12 @@ entities:
   - wine_2
 
 slots:
+  retry_count:
+    type: float
+    initial_value: 0.0
+    influence_conversation: false
+    mappings:
+      - type: custom
   Title:
     type: text
     influence_conversation: false
@@ -62,8 +68,6 @@ slots:
           - active_loop: wine_search_form
             requested_slot: Price
       - type: from_text
-        not_intent:
-          - cancel_search
         conditions:
           - active_loop: wine_search_form
             requested_slot: Price
@@ -81,8 +85,6 @@ slots:
           - active_loop: wine_search_form
             requested_slot: Grape
       - type: from_text
-        not_intent:
-          - cancel_search
         conditions:
           - active_loop: wine_search_form
             requested_slot: Grape
@@ -100,8 +102,6 @@ slots:
           - active_loop: wine_search_form
             requested_slot: Country
       - type: from_text
-        not_intent:
-          - cancel_search
         conditions:
           - active_loop: wine_search_form
             requested_slot: Country
@@ -112,24 +112,24 @@ slots:
     mappings:
       - type: from_entity
         entity: Characteristics
-      - type: from_intent
-        intent: dont_care
-        value: "any"
-        conditions:
-          - active_loop: wine_search_form
-            requested_slot: Characteristics
-      - type: from_text
-        not_intent:
-          - cancel_search
-        conditions:
-          - active_loop: wine_search_form
-            requested_slot: Characteristics
+ 
   Type:
     type: text
     influence_conversation: false
     mappings:
       - type: from_entity
         entity: Type
+      - type: from_intent
+        intent: dont_care
+        value: "any"
+        conditions:
+          - active_loop: wine_search_form
+            requested_slot: Type
+      - type: from_text
+        conditions:
+          - active_loop: wine_search_form
+            requested_slot: Type
+
   ABV:
     type: text
     influence_conversation: false
@@ -160,56 +160,17 @@ slots:
     mappings:
       - type: from_entity
         entity: Appellation
-  characteristics_list:
-    type: text
-    mappings:
-    - type: custom
-  wine_search_results:
-    type: text
-    mappings:
-    - type: custom
-  food:
-    type: text
-    influence_conversation: false
-    mappings:
-      - type: from_entity
-        entity: food
-  term:
-    type: text
-    influence_conversation: false
-    mappings:
-      - type: from_entity
-        entity: term
-  wine_name:
-    type: text
-    influence_conversation: true  # <--- CRUCIALE: forza Rasa a considerare il valore dello slot
-    mappings:
-    - type: from_entity
-      entity: wine_name
-  wine_1:
-    type: text
-    influence_conversation: true
-    mappings:
-      - type: from_entity
-        entity: wine_1
-  wine_2:
-    type: text
-    influence_conversation: true
-    mappings:
-      - type: from_entity
-        entity: wine_2
+
 
 forms:
   wine_search_form:
     ignored_intents:
-      - ask_explain_characteristics
-      - ask_explain_grape
       - cancel_search
     required_slots:
       - Price  
       - Grape   
       - Country 
-      - Characteristics 
+      - Type 
 
 actions:
   - action_session_start
@@ -251,8 +212,8 @@ responses:
   utter_ask_Country:
     - text: "From which country would you like the wine to be?"
 
-  utter_ask_Characteristics:
-    - text: "Do you have any specific characteristics in mind?"
+  utter_ask_Type:
+    - text: "Do you have any specific type of wine in mind? (Brown, Mixed, Orange, Red, Rosé, Tawny, White)"
 
   # --- SPIEGAZIONI (INTERRUZIONI) ---
   utter_explain_grape:
