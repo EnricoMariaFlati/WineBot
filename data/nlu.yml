@@ -274,6 +274,7 @@ nlu:
 - intent: get_wine_details
   examples: |
     - tell me about [Yalumba Viognier](wine_name)
+    - Tell me about [Chateau Margaux](wine_name)
     - give me info on [Cabernet](wine_name)
     - what can you tell me about [Chardonnay](wine_name)?
     - info on [Pinot Noir](wine_name)
@@ -295,6 +296,7 @@ nlu:
     - describe [Tempranillo](wine_name)
     - explain [Chardonnay](wine_name)
     - detail on [Cabernet](wine_name)
+    - what can you tell me about [The Guv'nor](wine_name)?
 
 - intent: compare_wines
   examples: |

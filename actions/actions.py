@@ -6,7 +6,7 @@ from rasa_sdk.forms import FormValidationAction
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet, SessionStarted, ActionExecuted
 from rasa_sdk.types import DomainDict
-from rapidfuzz import process
+from rapidfuzz import process, fuzz
 import difflib
 
 class ActionListCharacteristics(Action):
@@ -464,51 +464,83 @@ class ActionGetWineDetails(Action):
         return []
     
 class ActionCompareWines(Action):
-    def name(self) -> Text:
-        return "action_compare_wines"
+        def name(self) -> Text:
+            return "action_compare_wines"
 
-    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain):
-        w1_input = tracker.get_slot("wine_1")
-        w2_input = tracker.get_slot("wine_2")
-        
-        # Load dataset
-        df = pd.read_csv("WineDataset.csv")
-        titles = df['Title'].tolist()
+        def run(self, dispatcher: CollectingDispatcher,
+                tracker: Tracker,
+                domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
-        # Fuzzy matching logic
-        def get_best_match(user_input):
-            if not user_input: return None
-            match = process.extractOne(user_input, titles, scorer=fuzz.WRatio)
-            # Threshold set to 70 for reliability
-            return df[df['Title'] == match[0]].iloc[0] if match[1] > 70 else None
+            w1_input = tracker.get_slot("wine_1")
+            w2_input = tracker.get_slot("wine_2")
+            
+            # 1. CARICAMENTO SICURO
+            try:
+                df = pd.read_csv("WineDataset.csv")
+            except FileNotFoundError:
+                dispatcher.utter_message(text="I'm sorry, I cannot access the wine database right now. 🍷")
+                return []
 
-        d1 = get_best_match(w1_input)
-        d2 = get_best_match(w2_input)
+            # Helpers per pulizia dati
+            def clean(value):
+                if pd.isna(value) or str(value).strip().lower() == "nan" or str(value).strip() == "":
+                    return "Not specified"
+                return str(value)
 
-        if d1 is None or d2 is None:
-            dispatcher.utter_message(text="I couldn't find one or both of the wines. Please check the spelling and try again! 🍷")
+            def get_numeric_price(price_str):
+                try:
+                    cleaned = re.sub(r'[^\d.]', '', str(price_str))
+                    return float(cleaned) if cleaned else 0.0
+                except:
+                    return 0.0
+
+            # 2. FUZZY MATCHING
+            titles = df['Title'].tolist()
+            def get_best_match(user_input):
+                if not user_input: return None
+                match = process.extractOne(user_input, titles, scorer=fuzz.WRatio)
+                return df[df['Title'] == match[0]].iloc[0] if match[1] > 75 else None
+
+            d1 = get_best_match(w1_input)
+            d2 = get_best_match(w2_input)
+
+            if d1 is None or d2 is None:
+                dispatcher.utter_message(text="I couldn't find one or both of the wines. Try checking the spelling! 🧐")
+                return []
+
+            # 3. VERDETTO
+            p1 = get_numeric_price(d1['Price'])
+            p2 = get_numeric_price(d2['Price'])
+            verdict = ""
+            if p1 > 0 and p2 > 0:
+                if p1 < p2: verdict = f"💡 *Quick Tip:* {d1['Title']} is more budget-friendly!"
+                elif p2 < p1: verdict = f"💡 *Quick Tip:* {d2['Title']} is the more affordable option."
+                else: verdict = "💡 *Quick Tip:* Both wines are in a similar price range."
+
+            # 4. PREPARAZIONE PULSANTI (PAYLOAD STRUTTURATO)
+            buttons = [
+                {"title": "🔍 About Barolo", "payload": "Tell me about Barolo"},
+                {"title": "🔍 About Chianti", "payload": "Tell me about Chianti"}
+            ]
+
+            # 5. MESSAGGIO FINALE
+            msg = (f"⚖️ *WINE COMPARISON*\n\n"
+                   f"🍷 *{d1['Title']}*\n"
+                   f"💰 Price: {clean(d1['Price'])}\n"
+                   f"🍇 Grape: {clean(d1['Grape'])}\n"
+                   f"🌍 Origin: {clean(d1['Country'])}\n"
+                   f"⚡ ABV: {clean(d1['ABV'])}\n\n"
+                   f" 🆚 \n\n"
+                   f"🍷 *{d2['Title']}*\n"
+                   f"💰 Price: {clean(d2['Price'])}\n"
+                   f"🍇 Grape: {clean(d2['Grape'])}\n"
+                   f"🌍 Origin: {clean(d2['Country'])}\n"
+                   f"⚡ ABV: {clean(d2['ABV'])}\n\n"
+                   f"{verdict}\n\n"
+                   f"✨ *Click below for full details:*")
+            
+            dispatcher.utter_message(text=msg, buttons=buttons)
             return []
-
-        # Mobile-friendly comparison layout
-        msg = (f"⚖️ *WINE COMPARISON*\n\n"
-               f"🍷 *{d1['Title']}*\n"
-               f"💰 Price: {d1['Price']}\n"
-               f"🍇 Grape: {d1['Grape']}\n"
-               f"🌍 Origin: {d1['Country']}\n"
-               f"⚡ ABV: {d1['ABV']}\n"
-               f"📝 Notes: {str(d1['Characteristics'])[:40]}...\n\n"
-               f"--- VS ---\n\n"
-               f"🍷 *{d2['Title']}*\n"
-               f"💰 Price: {d2['Price']}\n"
-               f"🍇 Grape: {d2['Grape']}\n"
-               f"🌍 Origin: {d2['Country']}\n"
-               f"⚡ ABV: {d2['ABV']}\n"
-               f"📝 Notes: {str(d2['Characteristics'])[:40]}...\n\n"
-               f"--- ✨ ---\n"
-               f"Want to know more? Type: 'Tell me about {d1['Title'][:10]}...' or 'Tell me about {d2['Title'][:10]}...'")
-        
-        dispatcher.utter_message(text=msg, parse_mode="Markdown")
-        return []
 
 class ActionSessionStart(Action):
     def name(self) -> Text:
