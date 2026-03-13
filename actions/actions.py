@@ -5,7 +5,9 @@ from rasa_sdk import Action, Tracker
 from rasa_sdk.forms import FormValidationAction
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet, SessionStarted, ActionExecuted
-from rapidfuzz import process, fuzz
+from rasa_sdk.types import DomainDict
+from rapidfuzz import process
+import difflib
 
 class ActionListCharacteristics(Action):
     def name(self) -> Text:
@@ -317,7 +319,8 @@ class ActionResetWineSlots(Action):
             SlotSet("Price", None),
             SlotSet("Grape", None),
             SlotSet("Country", None),
-            SlotSet("Characteristics", None)
+            SlotSet("Type", None),
+            SlotSet("retry_count", 0.0)
         ]
    
 class ActionWinePairing(Action):
@@ -403,8 +406,7 @@ class ActionExplainSpecificCharacteristicOfWine(Action):
             "dried-fruit": "Dried fruit aromas recall raisins, figs, or dried dates, often found in richer or aged wines. 🍇",
             "gooseberry": "Gooseberry is a tart green fruit aroma commonly associated with Sauvignon Blanc wines. 🟢",
             "flinty": "Flinty wines have aromas reminiscent of struck stone or wet flint, often linked to strong minerality. 🪨"
-        }
-
+}
         # Ricerca della definizione
         if term and term.lower() in definitions:
             explanation = definitions[term.lower()]

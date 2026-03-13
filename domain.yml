@@ -160,7 +160,44 @@ slots:
     mappings:
       - type: from_entity
         entity: Appellation
-
+  characteristics_list:
+    type: text
+    mappings:
+    - type: custom
+  wine_search_results:
+    type: text
+    mappings:
+    - type: custom
+  food:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: food
+  term:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: term
+  wine_name:
+    type: text
+    influence_conversation: true  # <--- CRUCIALE: forza Rasa a considerare il valore dello slot
+    mappings:
+    - type: from_entity
+      entity: wine_name
+  wine_1:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: wine_1
+  wine_2:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: wine_2
 
 forms:
   wine_search_form:
