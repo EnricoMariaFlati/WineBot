@@ -291,6 +291,7 @@ class ActionSearchWine(Action):
 
             # --- Ciclo di Formattazione Unico ---
             lista_formattata = intro
+            pulsanti = [] # 1. Creiamo una lista vuota per contenere i nostri pulsanti
             
             for index, vino in vini_da_mostrare.iterrows():
                 titolo = vino['Title']
@@ -299,9 +300,17 @@ class ActionSearchWine(Action):
                 
                 lista_formattata += f"🍷 **{titolo}** | 💰 {prezzo} | 🌍 {paese}\n"
                 lista_formattata += "—" * 15 + "\n\n"
+
+                # 2. Per ogni vino, creiamo un pulsante dinamico
+                # Nota dell'esperto: chiamarli tutti solo "Detail" confonderebbe l'utente
+                # se ci sono 5 bottoni identici. Meglio aggiungere il nome del vino nel titolo!
+                pulsanti.append({
+                    "title": f"🔍 Details: {titolo}", 
+                    "payload": f'/get_wine_details{{"wine_name": "{titolo}"}}'
+                })
             
-            # Inviamo il messaggio finale al bot
-            dispatcher.utter_message(text=lista_formattata)
+            # 3. Inviamo il messaggio finale passando anche la lista dei pulsanti
+            dispatcher.utter_message(text=lista_formattata, buttons=pulsanti)
 
         return []
 
@@ -519,8 +528,8 @@ class ActionCompareWines(Action):
 
             # 4. PREPARAZIONE PULSANTI (PAYLOAD STRUTTURATO)
             buttons = [
-                {"title": "🔍 About Barolo", "payload": "Tell me about Barolo"},
-                {"title": "🔍 About Chianti", "payload": "Tell me about Chianti"}
+                {"title": "🔍 About Barolo", "payload": '/get_wine_details{"wine_name": "Barolo"}'},
+                {"title": "🔍 About Chianti", "payload": '/get_wine_details{"wine_name": "Chianti"}'}
             ]
 
             # 5. MESSAGGIO FINALE
