@@ -12,13 +12,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Inoltra a Rasa
     response = requests.post(RASA_URL, json={"sender": str(update.effective_chat.id), "message": user_text})
     
-    # Invia la risposta di Rasa a Telegram
     for r in response.json():
         if "text" in r:
             text = r["text"]
             reply_markup = None
             
-            # Se Rasa invia dei bottoni, creiamo la tastiera inline
             if "buttons" in r and r["buttons"]:
                 keyboard = [
                     [InlineKeyboardButton(b["title"], callback_data=b["payload"])] 
@@ -26,7 +24,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
             
-            await update.message.reply_text(text, reply_markup=reply_markup)
+            # PROVA A INVIARE IL MESSAGGIO CON I BOTTONI
+            try:
+                await update.message.reply_text(text, reply_markup=reply_markup)
+            except Exception as e:
+                # Se i bottoni sono ancora "invalidi" per Telegram, invia solo il testo
+                print(f"⚠️ Errore pulsanti Telegram: {e}")
+                await update.message.reply_text(text)
 
 async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query

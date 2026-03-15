@@ -528,8 +528,8 @@ class ActionCompareWines(Action):
 
             # 4. PREPARAZIONE PULSANTI (PAYLOAD STRUTTURATO)
             buttons = [
-                {"title": "🔍 About Barolo", "payload": '/get_wine_details{"wine_name": "Barolo"}'},
-                {"title": "🔍 About Chianti", "payload": '/get_wine_details{"wine_name": "Chianti"}'}
+                {"title": f"🔍 About {d1['Title'][:20]}...", "payload": f'/get_wine_details{{"wine_name": "{d1["Title"][:25]}"}}'},
+                {"title": f"🔍 About {d2['Title'][:20]}...", "payload": f'/get_wine_details{{"wine_name": "{d2["Title"][:25]}"}}'}
             ]
 
             # 5. MESSAGGIO FINALE
