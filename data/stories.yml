@@ -87,3 +87,18 @@ stories:
       - action: action_reset_wine_slots
       - intent: goodbye
       - action: utter_goodbye
+
+  - story: Technical Deep Dive After Wine Research
+    steps:
+      - intent: greet
+      - action: utter_greet
+      - checkpoint: after_greet
+      - intent: ask_capabilities
+      - action: utter_capabilities
+      - checkpoint: after_capabilities
+      - intent: get_wine_details
+      - action: action_get_wine_details
+      - intent: explain_specific_characteristic_of_wine
+      - action: action_explain_specific_characteristic_of_wine
+      - intent: goodbye
+      - action: utter_goodbye

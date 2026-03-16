@@ -21,8 +21,6 @@ rules:
   - intent: ask_capabilities
   - action: utter_capabilities
 
-
-
 - rule: Activate wine search form
   steps:
   - intent: wine_search
@@ -101,3 +99,8 @@ rules:
   - intent: thank_you
   - action: utter_welcome_capabilities
   - action: utter_capabilities
+
+- rule: Handle multiple characteristic explanations #(Per gestire richieste di spiegazione di termini/caratteristiche multiple in una conversazione)
+  steps:
+  - intent: explain_specific_characteristic_of_wine
+  - action: action_explain_specific_characteristic_of_wine

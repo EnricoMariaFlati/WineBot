@@ -37,6 +37,11 @@ nlu:
     - see you soon
     - have a good evening
     - talk to you later
+    - ok, thanks for all, good bye
+    - thanks, bye!
+    - goodbye, thanks for the help!
+    - see you, thanks for the help!
+    - thanks, see you later!
 
 - intent: thank_you
   examples: |
@@ -234,6 +239,9 @@ nlu:
 
 - intent: explain_specific_characteristic_of_wine
   examples: |
+    - and what does it mean if a wine is [fruity](term)?
+    - ok, thanks, but what does it mean if a wine is [dry](term)? 
+    - perfectly clear, but can you explain what [vanilla](term) means in wine?
     - What does it mean if a wine is [sapid](term)?
     - Explain to me what [tannins](term) are.
     - What does [full-bodied](term) mean?
