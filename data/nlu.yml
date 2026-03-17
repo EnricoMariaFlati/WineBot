@@ -208,8 +208,6 @@ nlu:
     - help me
     - what parameters do you use to search for wines?
 
-
-
 - intent: out_of_scope_of_bot
   examples: |
     - Who won the world cup?

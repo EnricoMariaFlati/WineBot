@@ -259,7 +259,6 @@ responses:
   utter_explain_characteristics:
     - text: "By characteristics, I mean the specific aromas and flavors you enjoy in a wine, like 'fruity', 'vanilla', 'oak', 'spicy', or 'floral' notes."
 
-
   utter_cancel_search:
     - text: "Ok, you have exited the search. Here is what I can do for you:"
 
@@ -271,8 +270,7 @@ responses:
   
   utter_anything_else:
     - text: "Alright, no problem! Let me know if you want to explore other wine characteristics or if you need anything else."
-    
-
+  
   utter_characteristics_list:
     - text: "Here are the available wine characteristics:\n{characteristics_list}"
 
