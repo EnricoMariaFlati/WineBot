@@ -4,10 +4,25 @@ version: "3.1"
 
 rules:
 
+- rule: Stop form and restart chat
+  condition:
+  - active_loop: wine_search_form  # Se siamo dentro il form...
+  steps:
+  - intent: greet                  # ...e l'utente invia /start o saluta
+  - action: action_deactivate_loop # 1. Chiudi brutalmente il form
+  - active_loop: null              # 2. Conferma che il loop è chiuso
+  - action: action_reset_wine_slots # 3. Svuota la memoria del form precedente
+  - action: utter_greet            # 4. Rispondi col messaggio di benvenuto normale
+
 - rule: Respond to greeting anytime
   steps:
   - intent: greet
   - action: utter_greet
+
+- rule: Respond to start anytime
+  steps:
+  - intent: start
+  - action: utter_capabilities
 
 - rule: Say goodbye anytime the user says goodbye
   steps:
@@ -94,8 +109,3 @@ rules:
   - action: utter_cancel_search
   - action: utter_capabilities
 
-- rule: Respond to thank you anytime
-  steps:
-  - intent: thank_you
-  - action: utter_welcome_capabilities
-  - action: utter_capabilities

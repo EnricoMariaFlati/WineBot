@@ -3,6 +3,7 @@ version: "3.1"
 # Intents introdotti di base dal comando 'rasa init'
 
 intents:
+  - start
   - greet
   - goodbye
   - affirm
@@ -43,6 +44,13 @@ entities:
   - wine_2
 
 slots:
+
+  search_successful:
+    type: bool
+    influence_conversation: true # CRUCIALE: Dice a Rasa di usare questo slot per scegliere la storia
+    mappings:
+      - type: custom
+
   retry_count:
     type: float
     initial_value: 0.0
@@ -121,6 +129,12 @@ slots:
         entity: Type
       - type: from_intent
         intent: dont_care
+        value: "any"
+        conditions:
+          - active_loop: wine_search_form
+            requested_slot: Type
+      - type: from_intent      
+        intent: deny
         value: "any"
         conditions:
           - active_loop: wine_search_form
@@ -230,11 +244,11 @@ responses:
 
   utter_capabilities:
     - text: |
-        I am your virtual sommelier! I can help you explore the world of wine in many ways. Here is what you can ask me:
+        Hello, I am your virtual sommelier! I can help you explore the world of wine in many ways. Here is what you can ask me:
         
-        🍷 Wine Search: Want to know everything about a specific wine? Ask me (e.g., "Tell me about The Guv'nor").
-        🌍 **Wine selection:** I can help you find the perfect bottle based on your budget and origin.
-        🍽️ **Food pairing**: Tell me what you're eating, and I'll suggest the best wine to match your dish! 🥂✨
+        🍷 Wine Details: Want to know everything about a specific wine? Ask me (e.g., "Tell me about The Guv'nor").
+        🌍 Wine selection: I can help you find the perfect bottle based on your budget, origin, grape and type.
+        🍽️ Food pairing: Tell me what you're eating, and I'll suggest the best wine to match your dish! 🥂✨
         📖 Wine Glossary: Curious about technical terms like "tannins" or "full-bodied"? Ask me for a definition! 🔍🍷
         ⚖️ Wine Comparison: Unsure which one to pick? Ask me to compare two wines (e.g., "Compare Merlot and Cabernet").
 

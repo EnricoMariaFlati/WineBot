@@ -1,54 +1,45 @@
 version: "3.1"
 
 stories:
-  - story: User starts a new search after a previous one
-    steps:
-      - intent: wine_search
-      - action: wine_search_form
-      - active_loop: wine_search_form
-      - active_loop: null
-      - slot_was_set:
-          - requested_slot: null
-      - action: action_search_wine
-      - action: action_reset_wine_slots
-      # Il bot ha mostrato i vini (o gli 0 risultati) e svuotato la memoria.
-      # L'utente decide di fare una nuova ricerca inserendo nuovi parametri:
-      - intent: wine_search 
-      - action: wine_search_form
-      - active_loop: wine_search_form
 
-  - story: User wants to try again after search
+# ---------------------------------------------------
+  # CASO 1: RICERCA FALLITA
+  # ---------------------------------------------------
+  
+  - story: Search failed, user wants to try again
     steps:
-      - intent: wine_search
-      - action: wine_search_form
-      - active_loop: wine_search_form
-      - active_loop: null
-      - slot_was_set:
-          - requested_slot: null
-      - action: action_search_wine
-      - action: action_reset_wine_slots
-      # Il bot ha appena fatto la domanda. L'utente risponde "sì":
-      - intent: affirm
-      # Dato che gli slot sono già vuoti, rilanciamo semplicemente il form
-      - action: wine_search_form
-      - active_loop: wine_search_form
+    - action: action_search_wine
+    - slot_was_set:
+      - search_successful: false
+    - action: action_reset_wine_slots
+    - intent: affirm
+    - action: wine_search_form
+    - active_loop: wine_search_form
 
-  # SCENARIO 2: L'utente dice "No" e non vuole riprovare
-  - story: User does not want to try again after search
+  - story: Search failed, user DOES NOT want to try again
     steps:
-      - intent: wine_search
-      - action: wine_search_form
-      - active_loop: wine_search_form
-      - active_loop: null
-      - slot_was_set:
-          - requested_slot: null
-      - action: action_search_wine
-      - action: action_reset_wine_slots
-      # Il bot ha appena fatto la domanda. L'utente risponde "no":
-      - intent: deny
-      # Il bot accetta il rifiuto educatamente. La memoria è già vuota.
-      - action: utter_anything_else
+    - action: action_search_wine
+    - slot_was_set:
+      - search_successful: false
+    - action: action_reset_wine_slots
+    - intent: deny
+    - action: utter_anything_else
 
+  # ---------------------------------------------------
+  # CASO 2: RICERCA RIUSCITA
+  # ---------------------------------------------------
+
+  - story: Search successful, user thanks after details
+    steps:
+    - action: action_search_wine
+    - slot_was_set:
+      - search_successful: true
+    - action: action_reset_wine_slots 
+    - action: action_get_wine_details
+    - intent: thank_you
+    # Assicurati di aver rimosso la regola globale in rules.yml per non avere errori!
+    - action: utter_welcome
+    
   - story: Complete onboarding before search (Warm Start)
     steps:
       - intent: greet

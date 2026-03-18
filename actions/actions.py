@@ -270,50 +270,58 @@ class ActionSearchWine(Action):
 
         if numero_risultati == 0:
             # SCENARIO A: 0 risultati
-            dispatcher.utter_message(
-                text="I'm sorry, I couldn't find any wine matching all these specific criteria in my cellar.\nLet's try again! Could you provide different criteria?"
-            )
+            testo_risposta = "I'm sorry, I couldn't find any wine matching all these specific criteria. Would you like to start a new search? 🍷"
+            pulsanti_riavvio = [
+                # Se clicca Yes, inviamo l'intento /wine_search che riavvia in automatico il form!
+                {"title": "Yes, please! 🔄", "payload": "/wine_search"},
+                # Se clicca No, inviamo l'intento /deny
+                {"title": "No, thanks ❌", "payload": "/deny"}
+            ]
+            dispatcher.utter_message(text=testo_risposta, buttons=pulsanti_riavvio)
+            
+            return [SlotSet("search_successful", False)] # <--- CORRETTO!
 
         else:
-            # Abbiamo trovato dei risultati! Prepariamo il testo introduttivo e i vini da mostrare
+            # Abbiamo trovato dei risultati! Prepariamo il testo introduttivo
             if 1 <= numero_risultati <= 5:
                 # SCENARIO B: Da 1 a 5 risultati (Li mostriamo tutti)
                 if numero_risultati == 1:
-                    intro = "I found exactly **1 perfect wine** for you:\n\n"
+                    intro = "I found exactly **1 perfect wine** for you:"
                 else:
-                    intro = f"Great choices! I found **{numero_risultati} wines** that match your request. Here they are:\n\n"
+                    intro = f"Great choices! I found **{numero_risultati} wines** that match your request. Here they are:"
                 vini_da_mostrare = filtered_df
 
             else:
                 # SCENARIO C: Più di 5 risultati (Estraiamo 5 campioni casuali)
-                intro = f"We have many wines matching your criteria! I propose 5 of the best ones for you:\n\n"
+                intro = f"We have many wines matching your criteria! I propose 5 of the best ones for you. You can press 'More details' if you want more info, or back to start if you want try another function"
                 vini_da_mostrare = filtered_df.sample(5)
 
-            # --- Ciclo di Formattazione Unico ---
-            lista_formattata = intro
-            pulsanti = [] # 1. Creiamo una lista vuota per contenere i nostri pulsanti
-            
+            # 1. Inviamo PRIMA il messaggio introduttivo da solo
+            dispatcher.utter_message(text=intro)
+
+            # 2. Ciclo per inviare un messaggio SEPARATO per ogni vino
             for index, vino in vini_da_mostrare.iterrows():
                 titolo = vino['Title']
                 prezzo = vino['Price']
                 paese = vino['Country']
                 
-                lista_formattata += f"🍷 **{titolo}** | 💰 {prezzo} | 🌍 {paese}\n"
-                lista_formattata += "—" * 15 + "\n\n"
+                # Testo specifico solo per questo vino
+                testo_vino = f"🍷 **{titolo}**\n🌍 {paese}\n💰 {prezzo}"
 
-                # 2. Per ogni vino, creiamo un pulsante dinamico
-                # Nota dell'esperto: chiamarli tutti solo "Detail" confonderebbe l'utente
-                # se ci sono 5 bottoni identici. Meglio aggiungere il nome del vino nel titolo!
-                pulsanti.append({
-                    "title": f"🔍 Details: {titolo}", 
-                    "payload": f'/get_wine_details{{"wine_name": "{titolo}"}}'
-                })
+                # Tagliamo il titolo a max 25 caratteri per il payload di Telegram
+                titolo_corto = str(titolo)[:25] 
+
+                # Creiamo la lista contenente UN SOLO bottone per questo messaggio
+                bottone_dettagli = [{
+                    "title": "🔍 More Details", 
+                    "payload": f'/get_wine_details{{"wine_name": "{titolo_corto}"}}'
+                }]
             
-            # 3. Inviamo il messaggio finale passando anche la lista dei pulsanti
-            dispatcher.utter_message(text=lista_formattata, buttons=pulsanti)
+                # 3. Inviamo il messaggio del vino associando il suo bottone
+                dispatcher.utter_message(text=testo_vino, buttons=bottone_dettagli)
 
-        return []
-
+            # <--- IL SEGNALE SPOSTATO QUI, FUORI DAL CICLO FOR!
+            return [SlotSet("search_successful", True)]
 
 class ActionResetWineSlots(Action):
     def name(self) -> Text:
